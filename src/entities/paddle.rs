@@ -1,12 +1,14 @@
 pub struct Paddle {
-	x: i8,
-	y: i8,
+	x: f64,
+	y: f64,
 	width: f64,
 	height: f64
 }
 
-pub fn hello() -> String {
-	"Hello!".to_string()
+impl Paddle {
+	fn position(&self) -> [f64; 2] {
+		[self.x, self.y]
+	}
 }
 
 #[cfg(test)]
@@ -14,13 +16,14 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn test_hello() {
-		assert_eq!("Hello!".to_string(), hello());
+	fn test_basic_paddle() {
+		let p1 = Paddle{x: 15.0, y: 15.0, width: 20.0, height: 20.0};
+		assert!(p1.x > 0.0);
 	}
 
 	#[test]
-	fn test_basic_paddle() {
-		let p1 = Paddle{x: 15, y: 15, width: 20.0, height: 20.0};
-		assert!(p1.x > 0);
-	}
+	fn test_position() {
+		let p1 = Paddle{x: 15.0, y: 15.0, width: 20.0, height: 20.0};
+		assert_eq!([15.0, 15.0], p1.position());
+	}	
 }

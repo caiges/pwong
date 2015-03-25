@@ -4,5 +4,4 @@ extern crate pwong;
 
 fn main() {
     println!("Hello, world!");
-    println!("{}", pwong::entities::paddle::hello());
 }
