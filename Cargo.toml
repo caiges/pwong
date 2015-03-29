@@ -7,7 +7,3 @@ authors = ["caiges <caige@fastmail.fm>"]
 [lib]
 name = "pwong"
 path = "src/lib.rs"
-
-[dependencies.pistoncore-sdl2_window]
-
-git = "https://github.com/pistondevelopers/sdl2_window"
