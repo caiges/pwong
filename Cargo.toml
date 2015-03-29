@@ -7,3 +7,7 @@ authors = ["caiges <caige@fastmail.fm>"]
 [lib]
 name = "pwong"
 path = "src/lib.rs"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
