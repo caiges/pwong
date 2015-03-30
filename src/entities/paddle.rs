@@ -1,12 +1,16 @@
 pub struct Paddle {
-	x: i16,
-	y: i16,
-	width: f64,
-	height: f64
+	pub x: i32,
+	pub y: i32,
+	pub width: i32,
+	pub height: i32
 }
 
 impl Paddle {
-	fn position(&self) -> [i16; 2] {
+	pub fn new(x: i32, y: i32, width: i32, height: i32) -> Paddle {
+		Paddle{x: x, y: y, width: width, height: height}
+	}
+
+	fn position(&self) -> [i32; 2] {
 		[self.x, self.y]
 	}
 }
