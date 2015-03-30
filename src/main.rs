@@ -1,6 +1,8 @@
 extern crate sdl2;
 extern crate pwong;
 
+use std::rc::Rc;
+
 use sdl2::video::{Window, WindowPos, RESIZABLE};
 use sdl2::render::{RenderDriverIndex, SOFTWARE, Renderer};
 use sdl2::rect::Rect;
@@ -38,8 +40,10 @@ pub fn main() {
     };
 
     //draw_ball(&renderer);
-    draw_paddle(&renderer, Paddle::new(0, 40, 40, 100));
-    draw_paddle(&renderer, Paddle::new(760, 40, 40, 100));
+    let mut p1 = Paddle::new(0, 40, 40, 100);
+    let mut p2 = Paddle::new(760, 40, 40, 100);
+    draw_paddle(&renderer, p1);
+    draw_paddle(&renderer, p2);
 
     let mut drawer = renderer.drawer();
     drawer.present();
@@ -57,6 +61,7 @@ pub fn main() {
                 },
                 Event::KeyDown { keycode: KeyCode::Up, .. } => {
                     println!("Going Up");
+                    p1.up();
                 },
                 Event::KeyDown { keycode: KeyCode::Down, .. } => {
                     println!("Going Down");

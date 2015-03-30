@@ -13,6 +13,12 @@ impl Paddle {
 	fn position(&self) -> [i32; 2] {
 		[self.x, self.y]
 	}
+
+	pub fn up(mut self) {
+		if(self.y > 0) {
+			self.y -= 1;
+		}
+	}
 }
 
 #[cfg(test)]
