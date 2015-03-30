@@ -55,6 +55,12 @@ pub fn main() {
                 Event::Quit {..} | Event::KeyDown { keycode: KeyCode::Escape, .. } => {
                     running = false
                 },
+                Event::KeyDown { keycode: KeyCode::Up, .. } => {
+                    println!("Going Up");
+                },
+                Event::KeyDown { keycode: KeyCode::Down, .. } => {
+                    println!("Going Down");
+                },
                 _ => {}
             }
         }
