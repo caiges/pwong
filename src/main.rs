@@ -18,6 +18,7 @@ fn draw_ball(renderer: &Renderer) {
 
 fn draw_paddle(renderer: &Renderer, paddle: Paddle) {
     let mut drawer = renderer.drawer();
+    // Clearing causes the entire screen to be colored the draw color
     //drawer.clear();
     drawer.set_draw_color(Color::RGB(255, 157, 0));
     drawer.draw_rect(Rect::new(paddle.x, paddle.y, paddle.width, paddle.height));
