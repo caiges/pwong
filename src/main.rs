@@ -61,13 +61,16 @@ pub fn main() {
             }
         }
         // Do game-y things
+
+        // Clear and redraw
         let mut drawer = renderer.drawer();
         drawer.set_draw_color(Color::RGB(0, 0, 0));
         drawer.clear();
 
         draw_paddle(&mut drawer, &mut p1);
         draw_paddle(&mut drawer, &mut p2);
-        // Can't get a drawer before the other draw functions since only one can be active at a time.
+
+        // Draw the queued up renders in the backbuffer
         drawer.present();
     }
 }
