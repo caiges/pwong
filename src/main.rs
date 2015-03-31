@@ -9,13 +9,6 @@ use sdl2::keycode::KeyCode;
 
 use pwong::entities::paddle::{Paddle};
 
-fn draw_ball(renderer: &Renderer) {
-    let mut drawer = renderer.drawer();
-    drawer.clear();
-    drawer.draw_rect(Rect::new(50, 50, 150, 175));
-    drawer.present();
-}
-
 fn draw_paddle(drawer: &mut RenderDrawer, paddle: &mut Paddle) {
     drawer.set_draw_color(Color::RGB(255, 157, 0));
     drawer.draw_rect(Rect::new(paddle.x, paddle.y, paddle.width, paddle.height));
