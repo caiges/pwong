@@ -14,14 +14,14 @@ impl Paddle {
 		[self.x, self.y]
 	}
 
-	pub fn up(&mut self) {
+	pub fn up(&mut self, mult: i32) {
 		if(self.y > 0) {
-			self.y -= 1;
+			self.y -= 1 * mult;
 		}
 	}
 
-	pub fn down(&mut self) {
-		self.y += 1;
+	pub fn down(&mut self, mult: i32) {
+		self.y += 1 * mult;
 	}
 }
 

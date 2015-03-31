@@ -36,7 +36,7 @@ pub fn main() {
 
     let mut p1 = Paddle::new(0, 40, 40, 100);
     let mut p2 = Paddle::new(760, 40, 40, 100);
-  
+    let movement_multiplier = 10;
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump();
@@ -49,13 +49,17 @@ pub fn main() {
                 Event::Quit {..} | Event::KeyDown { keycode: KeyCode::Escape, .. } => {
                     running = false
                 },
-                Event::KeyDown { keycode: KeyCode::Up, .. } => {
-                    println!("Going Up");
-                    p1.up();
+                Event::KeyDown { keycode: KeyCode::A, .. } => {
+                    p1.up(movement_multiplier);
                 },
-                Event::KeyDown { keycode: KeyCode::Down, .. } => {
-                    println!("Going Down");
-                    p1.down();
+                Event::KeyDown { keycode: KeyCode::Z, .. } => {
+                    p1.down(movement_multiplier);
+                },
+                Event::KeyDown { keycode: KeyCode::Quote, .. } => {
+                    p2.up(movement_multiplier);
+                },
+                Event::KeyDown { keycode: KeyCode::Slash, .. } => {
+                    p2.down(movement_multiplier);
                 },
                 _ => {}
             }
