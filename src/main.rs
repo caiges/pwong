@@ -15,21 +15,16 @@ use sdl2::keycode::KeyCode;
 
 use pwong::entities::paddle::{Paddle};
 
-fn draw_paddle(drawer: &mut RenderDrawer, paddle: &mut Paddle, step: i32) {
+fn draw_paddle(drawer: &mut RenderDrawer, paddle: &mut Paddle) {
+    drawer.set_draw_color(Color::RGB(0, 0, 0));
+    drawer.clear();
     drawer.set_draw_color(Color::RGB(255, 157, 0));
     drawer.draw_rect(Rect::new(paddle.x, paddle.y, paddle.width, paddle.height));
+    drawer.present();
 }
 
-fn move_paddle(drawer: &mut RenderDrawer, paddle: &mut Paddle) {
-    if paddle.old_y < paddle.y {
-        for n in paddle.old_y..paddle.y {
-            draw_paddle(drawer, paddle, n);
-        }
-    } else {
-        for n in paddle.y..paddle.old_y {
-            draw_paddle(drawer, paddle, n);
-        } 
-    }
+fn draw(drawer: &mut RenderDrawer, paddle1: &mut Paddle, paddle2: &mut Paddle) {
+    draw_paddle(drawer, paddle1);
 }
 
 pub fn main() {
@@ -47,7 +42,7 @@ pub fn main() {
 
     let mut p1 = Paddle::new(0, 40, 40, 40, 100);
     let mut p2 = Paddle::new(760, 40, 40, 40, 100);
-    let movement_multiplier = 20;
+    let movement_multiplier = 1;
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump();
@@ -83,15 +78,13 @@ pub fn main() {
 
         // Clear and redraw
         let mut drawer = renderer.drawer();
-        drawer.set_draw_color(Color::RGB(0, 0, 0));
-        drawer.clear();
-
-        move_paddle(&mut drawer, &mut p1);
-        move_paddle(&mut drawer, &mut p2);
-        //draw_paddle(&mut drawer, &mut p1);
-        //draw_paddle(&mut drawer, &mut p2);
+        
+        draw(&mut drawer, &mut p1, &mut p2);
+        //draw(&mut drawer, &mut p2);
+        //move_paddle(&mut drawer, &mut p1);
+        //move_paddle(&mut drawer, &mut p2);
 
         // Draw the queued up renders in the backbuffer
-        drawer.present();
+        //drawer.present();
     }
 }
