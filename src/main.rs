@@ -12,11 +12,18 @@ use sdl2::keycode::KeyCode;
 use pwong::entities::paddle::{Paddle};
 
 fn draw_paddle(drawer: &mut RenderDrawer, paddle: &mut Paddle) {
-    drawer.set_draw_color(Color::RGB(0, 0, 0));
-    drawer.clear();
-    drawer.set_draw_color(Color::RGB(255, 157, 0));
-    drawer.draw_rect(Rect::new(paddle.x, paddle.y, paddle.width, paddle.height));
-    drawer.present();
+    while paddle.old_y != paddle.y {
+        drawer.set_draw_color(Color::RGB(0, 0, 0));
+        drawer.clear();
+        drawer.set_draw_color(Color::RGB(255, 157, 0));
+        drawer.draw_rect(Rect::new(paddle.x, paddle.old_y, paddle.width, paddle.height));
+        drawer.present();
+        if paddle.y > paddle.old_y {
+            paddle.old_y += 1;
+        } else {
+            paddle.old_y -= 1;
+        }
+    }
 }
 
 fn draw(drawer: &mut RenderDrawer, paddle1: &mut Paddle, paddle2: &mut Paddle) {
@@ -26,7 +33,7 @@ fn draw(drawer: &mut RenderDrawer, paddle1: &mut Paddle, paddle2: &mut Paddle) {
 pub fn main() {
     let sdl_context = sdl2::init(sdl2::INIT_VIDEO).unwrap();
 
-    let window = match Window::new("PWONG", WindowPos::PosCentered, WindowPos::PosCentered, 800, 600, RESIZABLE) {
+    let window = match Window::new("PWONG", WindowPos::PosCentered, WindowPos::PosCentered, 1200, 800, RESIZABLE) {
         Ok(window) => window,
         Err(err) => panic!("failed to create window: {}", err)
     };
@@ -38,7 +45,7 @@ pub fn main() {
 
     let mut p1 = Paddle::new(0, 40, 40, 40, 100);
     let mut p2 = Paddle::new(760, 40, 40, 40, 100);
-    let movement_multiplier = 1;
+    let movement_multiplier = 40;
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump();
