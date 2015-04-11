@@ -1,11 +1,7 @@
-#![feature(old_io)]
-#![feature(std_misc)]
-
 extern crate sdl2;
 extern crate pwong;
 
-use std::old_io::Timer;
-use std::time::Duration;
+use std::thread;
 
 use sdl2::video::{Window, WindowPos, RESIZABLE};
 use sdl2::render::{RenderDriverIndex, SOFTWARE, Renderer, RenderDrawer};
@@ -49,8 +45,7 @@ pub fn main() {
 
     while running {
         // Limit to 60 FPS
-        let mut timer = Timer::new().unwrap();
-        timer.sleep(Duration::microseconds(16666));
+        thread::sleep_ms(17);
         
         for event in event_pump.poll_iter() {
             use sdl2::event::Event;
