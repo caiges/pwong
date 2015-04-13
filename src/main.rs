@@ -12,22 +12,16 @@ use sdl2::keycode::KeyCode;
 use pwong::entities::paddle::{Paddle};
 
 fn draw_paddle(drawer: &mut RenderDrawer, paddle: &mut Paddle) {
-    while paddle.old_y != paddle.y {
-        drawer.set_draw_color(Color::RGB(0, 0, 0));
-        drawer.clear();
-        drawer.set_draw_color(Color::RGB(255, 157, 0));
-        drawer.draw_rect(Rect::new(paddle.x, paddle.old_y, paddle.width, paddle.height));
-        drawer.present();
-        if paddle.y > paddle.old_y {
-            paddle.old_y += 1;
-        } else {
-            paddle.old_y -= 1;
-        }
-    }
+    drawer.set_draw_color(Color::RGB(0, 0, 0));
+    drawer.clear();
+    drawer.set_draw_color(Color::RGB(255, 157, 0));
+    drawer.draw_rect(Rect::new(paddle.x, paddle.y, paddle.width, paddle.height));
+    drawer.present();
 }
 
 fn draw(drawer: &mut RenderDrawer, paddle1: &mut Paddle, paddle2: &mut Paddle) {
     draw_paddle(drawer, paddle1);
+    draw_paddle(drawer, paddle2);
 }
 
 pub fn main() {
@@ -43,17 +37,13 @@ pub fn main() {
         Err(err) => panic!("failed to create renderer: {}", err)
     };
 
-    let mut p1 = Paddle::new(0, 40, 40, 40, 100);
-    let mut p2 = Paddle::new(760, 40, 40, 40, 100);
-    let movement_multiplier = 40;
+    let mut p1 = Paddle::new(0, 40, 800, 40, 100);
+    let mut p2 = Paddle::new(760, 40, 800, 40, 100);
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump();
 
     while running {
-        // Limit to 60 FPS
-        thread::sleep_ms(17);
-        
         for event in event_pump.poll_iter() {
             use sdl2::event::Event;
 
@@ -62,16 +52,28 @@ pub fn main() {
                     running = false
                 },
                 Event::KeyDown { keycode: KeyCode::A, .. } => {
-                    p1.up(movement_multiplier);
+                    p1.up();
+                },
+                Event::KeyUp { keycode: KeyCode::A, .. } => {
+                    p1.stop();
                 },
                 Event::KeyDown { keycode: KeyCode::Z, .. } => {
-                    p1.down(movement_multiplier);
+                    p1.down();
+                },
+                Event::KeyUp { keycode: KeyCode::Z, .. } => {
+                    p1.stop();
                 },
                 Event::KeyDown { keycode: KeyCode::Quote, .. } => {
-                    p2.up(movement_multiplier);
+                    p2.up();
+                },
+                Event::KeyUp { keycode: KeyCode::Quote, .. } => {
+                    p2.stop();
                 },
                 Event::KeyDown { keycode: KeyCode::Slash, .. } => {
-                    p2.down(movement_multiplier);
+                    p2.down();
+                },
+                Event::KeyUp { keycode: KeyCode::Slash, .. } => {
+                    p2.stop();
                 },
                 _ => {}
             }
@@ -79,8 +81,10 @@ pub fn main() {
         // Do game-y things
 
         // Clear and redraw
+        thread::sleep_ms(17);
+
         let mut drawer = renderer.drawer();
-        
+
         draw(&mut drawer, &mut p1, &mut p2);
         //draw(&mut drawer, &mut p2);
         //move_paddle(&mut drawer, &mut p1);
