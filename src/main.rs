@@ -12,24 +12,16 @@ use sdl2::keycode::KeyCode;
 use pwong::entities::paddle::{Paddle};
 
 fn draw_paddle(drawer: &mut RenderDrawer, paddle: &mut Paddle) {
-    while paddle.old_y != paddle.y {
-        drawer.set_draw_color(Color::RGB(0, 0, 0));
-        drawer.clear();
-        drawer.set_draw_color(Color::RGB(255, 157, 0));
-        drawer.draw_rect(Rect::new(paddle.x, paddle.old_y, paddle.width, paddle.height));
-        drawer.present();
-
-        if paddle.y > paddle.old_y {
-            paddle.old_y += 1;
-        } 
-        else {
-            paddle.old_y -= 1;
-        }
-    }
+    drawer.set_draw_color(Color::RGB(255, 157, 0));
+    drawer.draw_rect(Rect::new(paddle.x, paddle.y, paddle.width, paddle.height));
 }
 
 fn draw(drawer: &mut RenderDrawer, paddle1: &mut Paddle, paddle2: &mut Paddle) {
+    drawer.set_draw_color(Color::RGB(0, 0, 0));
+    drawer.clear();
     draw_paddle(drawer, paddle1);
+    draw_paddle(drawer, paddle2);
+    drawer.present();
 }
 
 pub fn main() {
@@ -47,7 +39,7 @@ pub fn main() {
 
     let mut p1 = Paddle::new(0, 40, 40, 40, 100);
     let mut p2 = Paddle::new(760, 40, 40, 40, 100);
-    let movement_multiplier = 20;
+    let movement_multiplier = 80;
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump();
