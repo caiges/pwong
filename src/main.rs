@@ -18,9 +18,11 @@ fn draw_paddle(drawer: &mut RenderDrawer, paddle: &mut Paddle) {
         drawer.set_draw_color(Color::RGB(255, 157, 0));
         drawer.draw_rect(Rect::new(paddle.x, paddle.old_y, paddle.width, paddle.height));
         drawer.present();
+
         if paddle.y > paddle.old_y {
             paddle.old_y += 1;
-        } else {
+        } 
+        else {
             paddle.old_y -= 1;
         }
     }
@@ -45,7 +47,7 @@ pub fn main() {
 
     let mut p1 = Paddle::new(0, 40, 40, 40, 100);
     let mut p2 = Paddle::new(760, 40, 40, 40, 100);
-    let movement_multiplier = 40;
+    let movement_multiplier = 20;
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump();
