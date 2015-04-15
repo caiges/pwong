@@ -33,12 +33,12 @@ fn draw(drawer: &mut RenderDrawer, paddle1: &mut Paddle, paddle2: &mut Paddle) {
 pub fn main() {
     let sdl_context = sdl2::init(sdl2::INIT_VIDEO).unwrap();
 
-    let window = match Window::new("PWONG", WindowPos::PosCentered, WindowPos::PosCentered, 1200, 800, RESIZABLE) {
+    let window = match Window::new(&sdl_context, "PWONG", WindowPos::PosCentered, WindowPos::PosCentered, 1200, 800, RESIZABLE) {
         Ok(window) => window,
         Err(err) => panic!("failed to create window: {}", err)
     };
 
-    let renderer = match Renderer::from_window(window, RenderDriverIndex::Auto, SOFTWARE) {
+    let mut renderer = match Renderer::from_window(window, RenderDriverIndex::Auto, SOFTWARE) {
         Ok(renderer) => renderer,
         Err(err) => panic!("failed to create renderer: {}", err)
     };
@@ -82,11 +82,5 @@ pub fn main() {
         let mut drawer = renderer.drawer();
         
         draw(&mut drawer, &mut p1, &mut p2);
-        //draw(&mut drawer, &mut p2);
-        //move_paddle(&mut drawer, &mut p1);
-        //move_paddle(&mut drawer, &mut p2);
-
-        // Draw the queued up renders in the backbuffer
-        //drawer.present();
     }
 }
