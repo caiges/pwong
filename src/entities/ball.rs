@@ -1,10 +1,15 @@
 pub struct Ball {
-  x: i16,
-  y: i16
+  pub x: i32,
+  pub y: i32,
+  pub r: i32
 }
 
 impl Ball {
-  fn position(&self) -> [i16; 2] {
+  pub fn new(x: i32, y: i32, r: i32) -> Ball {
+    Ball{x: x, y: y, r: r}
+  }
+
+  fn position(&self) -> [i32; 2] {
     [self.x, self.y]
   }
 }

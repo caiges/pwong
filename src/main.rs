@@ -5,22 +5,56 @@ use std::thread;
 
 use sdl2::video::{Window, WindowPos, RESIZABLE};
 use sdl2::render::{RenderDriverIndex, SOFTWARE, Renderer, RenderDrawer};
-use sdl2::rect::Rect;
+use sdl2::rect::{Point, Rect};
 use sdl2::pixels::Color;
 use sdl2::keycode::KeyCode;
 
 use pwong::entities::paddle::{Paddle};
+use pwong::entities::ball::{Ball};
+
+fn draw_circle(drawer: &mut RenderDrawer, ball: &mut Ball) {
+    drawer.set_draw_color(Color::RGB(255, 157, 0));
+    let mut f = 1 - ball.r;
+    let mut ddf_x = 1;
+    let mut ddf_y = -2 * ball.r;
+    let mut x = 0;
+    let mut y = ball.r;
+    drawer.draw_point(Point::new(ball.x, ball.y + ball.r));
+    drawer.draw_point(Point::new(ball.y, ball.y - ball.r));
+    drawer.draw_point(Point::new(ball.x + ball.r, ball.y));
+    drawer.draw_point(Point::new(ball.x - ball.r, ball.y));
+ 
+    while x < y {
+        if f >= 0 { 
+            y -= 1;
+            ddf_y += 2;
+            f += ddf_y;
+        }
+        x += 1;
+        ddf_x += 2;
+        f += ddf_x;  
+        drawer.draw_point(Point::new(ball.x + x, ball.y + y));
+        drawer.draw_point(Point::new(ball.x - x, ball.y + y));
+        drawer.draw_point(Point::new(ball.x + x, ball.y - y));
+        drawer.draw_point(Point::new(ball.x - x, ball.y - y));
+        drawer.draw_point(Point::new(ball.x + y, ball.y + x));
+        drawer.draw_point(Point::new(ball.x - y, ball.y + x));
+        drawer.draw_point(Point::new(ball.x +  y, ball.y - x));
+        drawer.draw_point(Point::new(ball.x - y, ball.y - x));
+    }
+}
 
 fn draw_paddle(drawer: &mut RenderDrawer, paddle: &mut Paddle) {
     drawer.set_draw_color(Color::RGB(255, 157, 0));
     drawer.draw_rect(Rect::new(paddle.x, paddle.y, paddle.width, paddle.height));
 }
 
-fn draw(drawer: &mut RenderDrawer, paddle1: &mut Paddle, paddle2: &mut Paddle) {
+fn draw(drawer: &mut RenderDrawer, paddle1: &mut Paddle, paddle2: &mut Paddle, ball: &mut Ball) {
     drawer.set_draw_color(Color::RGB(0, 0, 0));
     drawer.clear();
     draw_paddle(drawer, paddle1);
     draw_paddle(drawer, paddle2);
+    draw_circle(drawer, ball);
     drawer.present();
 }
 
@@ -40,6 +74,8 @@ pub fn main() {
     let mut p1 = Paddle::new(0, 40, 40, 40, 100);
     let mut p2 = Paddle::new(760, 40, 40, 40, 100);
     let movement_multiplier = 80;
+
+    let mut b = Ball::new(200, 200, 15);
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump();
@@ -75,6 +111,6 @@ pub fn main() {
         // Clear and redraw
         let mut drawer = renderer.drawer();
         
-        draw(&mut drawer, &mut p1, &mut p2);
+        draw(&mut drawer, &mut p1, &mut p2, &mut b);
     }
 }
