@@ -72,7 +72,7 @@ pub fn main() {
     };
 
     let mut p1 = Paddle::new(0, 40, 40, 40, 100);
-    let mut p2 = Paddle::new(760, 40, 40, 40, 100);
+    let mut p2 = Paddle::new(1160, 40, 40, 40, 100);
     let movement_multiplier = 80;
 
     let mut b = Ball::new(200, 200, 15);
