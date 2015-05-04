@@ -14,7 +14,7 @@ pub struct Ball {
 
 impl Ball {
   pub fn new(x: i32, y: i32, r: i32, vx: i32, vy: i32) -> Ball {
-    Ball{x: x, y: y, r: r, vx: vx, vy: vy, bounding_box: BoundingBox::new(x, y, r * 2, r * 2)}
+    Ball{x: x, y: y, r: r, vx: vx, vy: vy, bounding_box: BoundingBox::new(x - r, y - r, r * 2, r * 2)}
   }
 
   fn position(&self) -> [i32; 2] {
@@ -24,9 +24,14 @@ impl Ball {
   pub fn update(&mut self, paddle1: &Paddle, paddle2: &Paddle) {
     self.x += self.vx * SPEED;
     self.y += self.vy * SPEED;
+    self.bounding_box.update_position(self.x - self.r, self.y - self.r);
 
-    self.bounding_box.update_position(self.x, self.y);
-    println!("{:?}", self.bounding_box.collides_with(&paddle1.bounding_box));
+    if self.bounding_box.collides_with(&paddle1.bounding_box) {
+        self.vx = 5;
+        self.vy = 2;
+    } else if self.bounding_box.collides_with(&paddle2.bounding_box) {
+
+    }
     // Update vectors depending on collisions
 /*    if self.bounds().collides_with(paddle1) {
         self.vy = self.reflect(paddle1);
