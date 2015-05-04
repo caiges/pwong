@@ -75,7 +75,7 @@ pub fn main() {
     let mut p2 = Paddle::new(1160, 40, 40, 40, 100);
     let movement_multiplier = 80;
 
-    let mut b = Ball::new(56, 50, 15, 0, 0);
+    let mut b = Ball::new(120, 50, 15, -1, 0);
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump();
@@ -113,7 +113,9 @@ pub fn main() {
         
         draw(&mut drawer, &mut p1, &mut p2, &mut b);
         
-        // Update ball position
+        // Update positions
+        p1.update();
+        p2.update();
         b.update(&p1, &p2);
     }
 }
