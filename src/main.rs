@@ -10,6 +10,7 @@ use sdl2::pixels::Color;
 use sdl2::keycode::KeyCode;
 
 use pwong::entities::paddle::{Paddle};
+use pwong::entities::keymap::{KeyPressMap};
 
 fn draw_paddle(drawer: &mut RenderDrawer, paddle: &mut Paddle) {
     drawer.set_draw_color(Color::RGB(255, 157, 0));
@@ -40,6 +41,7 @@ pub fn main() {
     let mut p1 = Paddle::new(0, 40, 40, 40, 100);
     let mut p2 = Paddle::new(760, 40, 40, 40, 100);
     let movement_multiplier = 80;
+    let mut keymap = KeyPressMap::new();
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump();
@@ -47,7 +49,7 @@ pub fn main() {
     while running {
         // Limit to 60 FPS
         thread::sleep_ms(17);
-        
+
         for event in event_pump.poll_iter() {
             use sdl2::event::Event;
 
@@ -55,18 +57,8 @@ pub fn main() {
                 Event::Quit {..} | Event::KeyDown { keycode: KeyCode::Escape, .. } => {
                     running = false
                 },
-                Event::KeyDown { keycode: KeyCode::A, .. } => {
-                    p1.up(movement_multiplier);
-                },
-                Event::KeyDown { keycode: KeyCode::Z, .. } => {
-                    p1.down(movement_multiplier);
-                },
-                Event::KeyDown { keycode: KeyCode::Quote, .. } => {
-                    p2.up(movement_multiplier);
-                },
-                Event::KeyDown { keycode: KeyCode::Slash, .. } => {
-                    p2.down(movement_multiplier);
-                },
+                Event::KeyDown{ keycode, .. } => keymap.press(keycode),
+                Event::KeyUp{ keycode, .. } => keymap.release(keycode),
                 _ => {}
             }
         }
