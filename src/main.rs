@@ -9,11 +9,12 @@ use sdl2::rect::Rect;
 use sdl2::pixels::Color;
 use sdl2::keycode::KeyCode;
 
-use pwong::entities::paddle::{Paddle};
+use pwong::entities::paddle::{Paddle, PaddleDirection};
 use pwong::entities::keymap::{KeyPressMap};
 
 fn draw_paddle(drawer: &mut RenderDrawer, paddle: &mut Paddle) {
     drawer.set_draw_color(Color::RGB(255, 157, 0));
+    paddle.move_it();
     drawer.draw_rect(Rect::new(paddle.x, paddle.y, paddle.width, paddle.height));
 }
 
@@ -38,10 +39,10 @@ pub fn main() {
         Err(err) => panic!("failed to create renderer: {}", err)
     };
 
-    let mut p1 = Paddle::new(0, 40, 40, 40, 100);
-    let mut p2 = Paddle::new(760, 40, 40, 40, 100);
-    let movement_multiplier = 80;
     let mut keymap = KeyPressMap::new();
+
+    let mut p1 = Paddle::new(0, 40, 800, 40, 100);
+    let mut p2 = Paddle::new(760, 40, 800, 40, 100);
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump();
@@ -66,7 +67,20 @@ pub fn main() {
 
         // Clear and redraw
         let mut drawer = renderer.drawer();
-        
+
+        let p1_key = keymap.last_pressed(&[KeyCode::A, KeyCode::Z]);
+        p1.direction = match p1_key {
+            KeyCode::A => PaddleDirection::UP,
+            KeyCode::Z => PaddleDirection::DOWN,
+            _ => PaddleDirection::NONE
+        };
+        let p2_key = keymap.last_pressed(&[KeyCode::Quote, KeyCode::Slash]);
+        p2.direction = match p2_key {
+            KeyCode::Quote => PaddleDirection::UP,
+            KeyCode::Slash => PaddleDirection::DOWN,
+            _ => PaddleDirection::NONE
+        };
+
         draw(&mut drawer, &mut p1, &mut p2);
     }
 }
