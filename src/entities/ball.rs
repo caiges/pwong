@@ -20,10 +20,6 @@ impl Ball {
 		Ball{x: x, y: y, r: r, vx: vx, vy: vy, bounding_box: BoundingBox::new(x - r, y - r, r * 2, r * 2)}
 	}
 
-	fn position(&self) -> [i32; 2] {
-		[self.x, self.y]
-	}
-
 	// Determine the y value of intersection and return it
 	fn intersection(&self, paddle: &Paddle) -> i32 {
 		let intersect: i32;
@@ -46,11 +42,13 @@ impl Ball {
 		return (normalized_intersect * MAXBOUNCEANGLE as f32);
 	}
 
+	// Update the balls position and handle any collisions
 	pub fn update(&mut self, paddle1: &Paddle, paddle2: &Paddle, window_height: i32) {
 		self.x += self.vx * SPEED;
 		self.y += self.vy * SPEED;
 		self.bounding_box.update_position(self.x - self.r, self.y - self.r);
 
+		// If there is a collision, set new vectors
 		if self.bounding_box.collides_with(&paddle1.bounding_box) {
 			let bounce_angle = self.bounce_angle(&paddle1);
 
