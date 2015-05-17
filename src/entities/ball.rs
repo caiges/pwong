@@ -3,7 +3,7 @@ use std::f32::{consts};
 use entities::bounds::BoundingBox;
 use entities::paddle::Paddle;
 
-const SPEED: i32 = 1;
+const SPEED: i32 = 2;
 const MAXBOUNCEANGLE: f32 = (5.0 * consts::PI) / 12.0;
 
 pub struct Ball {
@@ -62,7 +62,7 @@ impl Ball {
 
 			self.vx = -(bounce_angle.cos() * SPEED as f32).round() as i32;
 			self.vy = (bounce_angle.sin() * SPEED as f32).round() as i32;
-		} else if self.y - self.r == 0 || self.y + self.r == window_height {
+		} else if self.y - self.r <= 0 || self.y + self.r >= window_height {
 			self.vy = -self.vy;
 		}
 	}
