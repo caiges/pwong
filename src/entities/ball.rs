@@ -64,14 +64,3 @@ impl Ball {
 		}
 	}
 }
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	#[test]
-	fn test_position() {
-		let b1 = Ball{x: 2334, y: 213};
-		assert_eq!([2334, 213], b1.position());
-	}
-}
