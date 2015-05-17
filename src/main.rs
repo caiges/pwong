@@ -3,6 +3,7 @@ extern crate pwong;
 
 use std::thread;
 
+use sdl2::event::{Event, WindowEventId};
 use sdl2::video::{Window, WindowPos, RESIZABLE};
 use sdl2::render::{RenderDriverIndex, SOFTWARE, Renderer, RenderDrawer};
 use sdl2::rect::Rect;
@@ -51,18 +52,39 @@ pub fn main() {
         // Limit to 60 FPS
         thread::sleep_ms(17);
 
-        for event in event_pump.poll_iter() {
-            use sdl2::event::Event;
+        let mut was_resized = false;
 
+        for event in event_pump.poll_iter() {
             match event {
                 Event::Quit {..} | Event::KeyDown { keycode: KeyCode::Escape, .. } => {
                     running = false
                 },
+                Event::Window { win_event_id: WindowEventId::Resized, .. } => { was_resized = true },
                 Event::KeyDown{ keycode, .. } => keymap.press(keycode),
                 Event::KeyUp{ keycode, .. } => keymap.release(keycode),
                 _ => {}
             }
         }
+
+        if was_resized {
+            let win_properties = renderer.window_properties(&event_pump).unwrap();
+            let (win_width, win_height) = win_properties.get_size();
+            if win_width != p2.x + p2.width {
+                p2.x = win_width - p2.width;
+            }
+            if win_height != p1.max_y {
+                p1.max_y = win_height;
+                p2.max_y = win_height;
+            }
+
+            if win_height < p1.y + p1.height {
+                p1.y = win_height - p1.height;
+            }
+            if win_height < p2.y + p2.height {
+                p2.y = win_height - p2.height;
+            }
+        }
+
         // Do game-y things
 
         // Clear and redraw
