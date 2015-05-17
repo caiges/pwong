@@ -99,7 +99,7 @@ pub fn main() {
                 Event::Quit {..} | Event::KeyDown { keycode: KeyCode::Escape, .. } => {
                     running = false
                 },
-                Event::Window { win_event_id: WindowEventId::Resized, data1: data1, data2: data2, .. } => {
+                Event::Window { win_event_id: WindowEventId::Resized, data1, data2, .. } => {
                     window_width = data1;
                     window_height = data2;
                     was_resized = true;
