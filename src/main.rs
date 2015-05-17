@@ -8,6 +8,7 @@ use sdl2::render::{RenderDriverIndex, SOFTWARE, Renderer, RenderDrawer};
 use sdl2::rect::{Point, Rect};
 use sdl2::pixels::Color;
 use sdl2::keycode::KeyCode;
+use sdl2::event::WindowEventId;
 
 use pwong::entities::paddle::{Paddle};
 use pwong::entities::ball::{Ball};
@@ -59,9 +60,12 @@ fn draw(drawer: &mut RenderDrawer, paddle1: &mut Paddle, paddle2: &mut Paddle, b
 }
 
 pub fn main() {
+    let mut window_width = 1200;
+    let mut window_height = 800;
+
     let sdl_context = sdl2::init(sdl2::INIT_VIDEO).unwrap();
 
-    let window = match Window::new(&sdl_context, "PWONG", WindowPos::PosCentered, WindowPos::PosCentered, 1200, 800, RESIZABLE) {
+    let window = match Window::new(&sdl_context, "PWONG", WindowPos::PosCentered, WindowPos::PosCentered, window_width, window_height, RESIZABLE) {
         Ok(window) => window,
         Err(err) => panic!("failed to create window: {}", err)
     };
@@ -103,6 +107,10 @@ pub fn main() {
                 Event::KeyDown { keycode: KeyCode::Slash, .. } => {
                     p2.down(movement_multiplier);
                 },
+                Event::Window { win_event_id: WindowEventId::Resized, data1: data1, data2: data2, .. } => {
+                    window_width = data1;
+                    window_height = data2;
+                }
                 _ => {}
             }
         }
@@ -116,6 +124,6 @@ pub fn main() {
         // Update positions
         p1.update();
         p2.update();
-        b.update(&p1, &p2, 800);
+        b.update(&p1, &p2, window_height);
     }
 }

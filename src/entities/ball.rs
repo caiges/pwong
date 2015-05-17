@@ -56,7 +56,6 @@ impl Ball {
 
 			self.vx = (bounce_angle.cos() * SPEED as f32).round() as i32;
 			self.vy = -(bounce_angle.sin() * SPEED as f32).round() as i32;
-
 		} else if self.bounding_box.collides_with(&paddle2.bounding_box) {
 			let bounce_angle = self.bounce_angle(&paddle2);
 
