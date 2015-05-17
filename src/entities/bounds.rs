@@ -14,7 +14,6 @@ impl BoundingBox {
         self.y = y;
     }
     pub fn collides_with(&self, candidate: &BoundingBox) -> bool { 
-        println!("{:?}, {:?}", self.position(), candidate.position());
         ! (self.top() > candidate.bottom() ||
             self.right() < candidate.left() ||
             self.bottom() < candidate.top() ||
