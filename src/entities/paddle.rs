@@ -70,6 +70,9 @@ impl Paddle {
                 self.velocity = MAX_VELOCITY;
             }
         }
+
+        // Update bounding box location
+        self.bounding_box.update_position(self.x, self.y);
     }
 }
 
