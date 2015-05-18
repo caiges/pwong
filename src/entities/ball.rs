@@ -65,7 +65,7 @@ impl Ball {
 			let bounce_angle = self.bounce_angle(&paddle2);
 
 			self.vx = -(bounce_angle.cos() * SPEED as f32).round() as i32;
-			self.vy = (bounce_angle.sin() * SPEED as f32).round() as i32;
+			self.vy = -(bounce_angle.sin() * SPEED as f32).round() as i32;
 		} else if self.y - self.r <= 0 || self.y + self.r >= window_height {
 			self.vy = -self.vy;
 		}
