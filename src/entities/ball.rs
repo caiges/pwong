@@ -91,7 +91,7 @@ mod tests {
     	assert!(ball.intersection(&paddle) == paddle.y + paddle.height);
     }
 
-        #[test]
+    #[test]
     fn test_bounce_angle() {
     	let paddle = Paddle::new(0, 40, 1000, 10, 100);
     	let mut ball = Ball::new(10, 50, 10, 1, 1); 
