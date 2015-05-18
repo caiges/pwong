@@ -77,9 +77,8 @@ pub fn main() {
         Err(err) => panic!("failed to create renderer: {}", err)
     };
 
-    let mut p1 = Paddle::new(0, 40, 40, 40, 100);
-    let mut p2 = Paddle::new(1160, 40, 40, 40, 100);
-    let movement_multiplier = 30;
+    let mut p1 = Paddle::new(0, 40, window_height, 40, 100);
+    let mut p2 = Paddle::new(1160, 40, window_height, 40, 100);
 
     let mut b = Ball::new(120, 40, 15, -1, 0);
     let mut keymap = KeyPressMap::new();
