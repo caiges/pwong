@@ -46,7 +46,7 @@ impl Ball {
 		let relative_intersect = (paddle.y + (paddle.height / 2)) - intersection_y;
 		let normalized_intersect = (relative_intersect as f32 / (paddle.height as f32 / 2 as f32)) as f32;
 
-		return (normalized_intersect * MAXBOUNCEANGLE as f32);
+		return normalized_intersect * MAXBOUNCEANGLE;
 	}
 
 	// Update the balls position and handle any collisions

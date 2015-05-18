@@ -62,7 +62,7 @@ fn draw(drawer: &mut RenderDrawer, paddle1: &mut Paddle, paddle2: &mut Paddle, b
 }
 
 pub fn main() {
-    let mut window_width = 1200;
+    let window_width = 1200;
     let mut window_height = 800;
 
     let sdl_context = sdl2::init(sdl2::INIT_VIDEO).unwrap();
@@ -98,8 +98,7 @@ pub fn main() {
                 Event::Quit {..} | Event::KeyDown { keycode: KeyCode::Escape, .. } => {
                     running = false
                 },
-                Event::Window { win_event_id: WindowEventId::Resized, data1, data2, .. } => {
-                    window_width = data1;
+                Event::Window { win_event_id: WindowEventId::Resized, data2, .. } => {
                     window_height = data2;
                     was_resized = true;
                 },
