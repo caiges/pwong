@@ -17,11 +17,18 @@ pub struct Ball {
 
 impl Ball {
 	pub fn new(x: i32, y: i32, r: i32, vx: i32, vy: i32) -> Ball {
-		Ball{x: x, y: y, r: r, vx: vx, vy: vy, bounding_box: BoundingBox::new(x - r, y - r, r * 2, r * 2)}
+		Ball{
+			x: x,
+			y: y,
+			r: r,
+			vx: vx,
+			vy: vy,
+			bounding_box: BoundingBox::new(x - r, y - r, r * 2, r * 2)
+		}
 	}
 
 	// Determine the y value of intersection and return it
-	fn intersection(&self, paddle: &Paddle) -> i32 {
+	pub fn intersection(&self, paddle: &Paddle) -> i32 {
 		let intersect: i32;
 	    if self.y < paddle.y {
             intersect = paddle.y;
@@ -34,7 +41,7 @@ impl Ball {
 	}
 
 	// Calculate the bounce angle used for reflection
-	fn bounce_angle(&self, paddle: &Paddle) -> f32 {
+	pub fn bounce_angle(&self, paddle: &Paddle) -> f32 {
 		let intersection_y = self.intersection(&paddle);
 		let relative_intersect = (paddle.y + (paddle.height / 2)) - intersection_y;
 		let normalized_intersect = (relative_intersect as f32 / (paddle.height as f32 / 2 as f32)) as f32;
@@ -63,4 +70,24 @@ impl Ball {
 			self.vy = -self.vy;
 		}
 	}
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use super::super::paddle::{Paddle};
+
+    #[test]
+    fn test_intersection() {
+    	let paddle = Paddle::new(0, 40, 1000, 10, 100);
+    	let mut ball = Ball::new(10, 40, 10, 1, 1); 
+
+    	assert!(ball.intersection(&paddle) == paddle.y);
+
+    	ball.y = 50;
+    	assert!(ball.intersection(&paddle) == ball.y);
+
+    	ball.y = 145;
+    	assert!(ball.intersection(&paddle) == paddle.y + paddle.height);
+    }
 }
