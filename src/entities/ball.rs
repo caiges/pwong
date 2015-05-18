@@ -96,7 +96,9 @@ mod tests {
     	let paddle = Paddle::new(0, 40, 1000, 10, 100);
     	let mut ball = Ball::new(10, 50, 10, 1, 1); 
 		let bounce_angle = ball.bounce_angle(&paddle);
-		
+
+		// Remember boys and girls, directly comparing floats is not accurate.
+		// For our uses, this level of precision is good enough.
     	assert!(bounce_angle > 1.0 && bounce_angle < 1.1);
     }
 }
