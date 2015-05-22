@@ -30,14 +30,14 @@ impl Ball {
 	// Determine the y value of intersection and return it
 	pub fn intersection(&self, paddle: &Paddle) -> i32 {
 		let intersect: i32;
-	    if self.y < paddle.y {
-            intersect = paddle.y;
-        } else if self.y > paddle.y + paddle.height {
-            intersect = paddle.y + paddle.height; 
-        } else {
-            intersect = self.y;
-        }
-        intersect
+		if self.y < paddle.y {
+			intersect = paddle.y;
+		} else if self.y > paddle.y + paddle.height {
+			intersect = paddle.y + paddle.height;
+		} else {
+			intersect = self.y;
+		}
+		intersect
 	}
 
 	// Calculate the bounce angle used for reflection
@@ -74,61 +74,61 @@ impl Ball {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use super::super::paddle::{Paddle};
+	use super::*;
+	use super::super::paddle::{Paddle};
 
-    #[test]
-    fn test_intersection() {
-    	let paddle = Paddle::new(0, 40, 1000, 10, 100);
-    	let mut ball = Ball::new(10, 40, 10, 1, 1); 
+	#[test]
+	fn test_intersection() {
+		let paddle = Paddle::new(0, 40, 1000, 10, 100);
+		let mut ball = Ball::new(10, 40, 10, 1, 1); 
 
-    	assert!(ball.intersection(&paddle) == paddle.y);
+		assert!(ball.intersection(&paddle) == paddle.y);
 
-    	ball.y = 50;
-    	assert!(ball.intersection(&paddle) == ball.y);
+		ball.y = 50;
+		assert!(ball.intersection(&paddle) == ball.y);
 
-    	ball.y = 145;
-    	assert!(ball.intersection(&paddle) == paddle.y + paddle.height);
-    }
+		ball.y = 145;
+		assert!(ball.intersection(&paddle) == paddle.y + paddle.height);
+	}
 
-    #[test]
-    fn test_bounce_angle() {
-    	let paddle = Paddle::new(0, 40, 1000, 10, 100);
-    	let ball = Ball::new(10, 50, 10, 1, 1); 
+	#[test]
+	fn test_bounce_angle() {
+		let paddle = Paddle::new(0, 40, 1000, 10, 100);
+		let ball = Ball::new(10, 50, 10, 1, 1); 
 		let bounce_angle = ball.bounce_angle(&paddle);
 
 		// Remember boys and girls, directly comparing floats is not accurate.
 		// For our uses, this level of precision is good enough.
-    	assert!(bounce_angle > 1.0 && bounce_angle < 1.1);
-    }
+		assert!(bounce_angle > 1.0 && bounce_angle < 1.1);
+	}
 
-    #[test]
-    fn test_update() {
-    	let paddle1 = Paddle::new(0, 40, 1000, 10, 100);
-    	let paddle2 = Paddle::new(0, 1000, 1000, 10, 100);
-    	let mut ball = Ball::new(12, 60, 15, -1, 0);
+	#[test]
+	fn test_update() {
+		let paddle1 = Paddle::new(0, 40, 1000, 10, 100);
+		let paddle2 = Paddle::new(0, 1000, 1000, 10, 100);
+		let mut ball = Ball::new(12, 60, 15, -1, 0);
 
-    	ball.update(&paddle1, &paddle2, 1000);
+		ball.update(&paddle1, &paddle2, 1000);
 
-    	// Up and to the right
-    	assert!(ball.vx == 1 && ball.vy == -1);
+		// Up and to the right
+		assert!(ball.vx == 1 && ball.vy == -1);
 
 		ball.x = 12;
-    	ball.y = 95;
-    	ball.vx = -1;
-    	ball.vy = 0;
-    	ball.update(&paddle1, &paddle2, 1000);
+		ball.y = 95;
+		ball.vx = -1;
+		ball.vy = 0;
+		ball.update(&paddle1, &paddle2, 1000);
 
-    	// Straight across
-    	assert!(ball.vx == 1 && ball.vy == 0);
+		// Straight across
+		assert!(ball.vx == 1 && ball.vy == 0);
 
-    	ball.x = 12;
-    	ball.y = 110;
-    	ball.vx = -1;
-    	ball.vy = 0;
-    	ball.update(&paddle1, &paddle2, 1000);
+		ball.x = 12;
+		ball.y = 110;
+		ball.vx = -1;
+		ball.vy = 0;
+		ball.update(&paddle1, &paddle2, 1000);
 
-    	// Down and to the right
-    	assert!(ball.vx == 1 && ball.vy == 1);
-    }
+		// Down and to the right
+		assert!(ball.vx == 1 && ball.vy == 1);
+	}
 }
