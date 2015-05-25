@@ -1,3 +1,5 @@
+use entities::bounds::BoundingBox;
+
 static DEFAULT_VELOCITY : f32 = 5f32;
 static MAX_VELOCITY : f32 = 40f32;
 static MULTIPLIER_UP : f32 = -1f32;
@@ -18,7 +20,8 @@ pub struct Paddle {
 	pub height: i32,
     pub velocity: f32,
     pub direction: PaddleDirection,
-    pub multiplier: f32
+    pub multiplier: f32,
+    pub bounding_box: BoundingBox
 }
 
 impl Paddle {
@@ -31,7 +34,8 @@ impl Paddle {
             height: height,
             velocity: DEFAULT_VELOCITY,
             direction: PaddleDirection::NONE,
-            multiplier: 0f32
+            multiplier: 0f32,
+            bounding_box: BoundingBox::new(x, y, width, height)
         }
 	}
 
@@ -66,6 +70,9 @@ impl Paddle {
                 self.velocity = MAX_VELOCITY;
             }
         }
+
+        // Update bounding box location
+        self.bounding_box.update_position(self.x, self.y);
     }
 }
 

@@ -6,12 +6,45 @@ use std::thread;
 use sdl2::event::{Event, WindowEventId};
 use sdl2::video::{Window, WindowPos, RESIZABLE};
 use sdl2::render::{RenderDriverIndex, SOFTWARE, Renderer, RenderDrawer};
-use sdl2::rect::Rect;
+use sdl2::rect::{Point, Rect};
 use sdl2::pixels::Color;
 use sdl2::keycode::KeyCode;
 
 use pwong::entities::paddle::{Paddle, PaddleDirection};
+use pwong::entities::ball::{Ball};
 use pwong::entities::keymap::{KeyPressMap};
+
+fn draw_circle(drawer: &mut RenderDrawer, ball: &mut Ball) {
+    drawer.set_draw_color(Color::RGB(255, 157, 0));
+    let mut f = 1 - ball.r;
+    let mut ddf_x = 1;
+    let mut ddf_y = -2 * ball.r;
+    let mut x = 0;
+    let mut y = ball.r;
+    drawer.draw_point(Point::new(ball.x, ball.y + ball.r));
+    drawer.draw_point(Point::new(ball.y, ball.y - ball.r));
+    drawer.draw_point(Point::new(ball.x + ball.r, ball.y));
+    drawer.draw_point(Point::new(ball.x - ball.r, ball.y));
+ 
+    while x < y {
+        if f >= 0 { 
+            y -= 1;
+            ddf_y += 2;
+            f += ddf_y;
+        }
+        x += 1;
+        ddf_x += 2;
+        f += ddf_x;  
+        drawer.draw_point(Point::new(ball.x + x, ball.y + y));
+        drawer.draw_point(Point::new(ball.x - x, ball.y + y));
+        drawer.draw_point(Point::new(ball.x + x, ball.y - y));
+        drawer.draw_point(Point::new(ball.x - x, ball.y - y));
+        drawer.draw_point(Point::new(ball.x + y, ball.y + x));
+        drawer.draw_point(Point::new(ball.x - y, ball.y + x));
+        drawer.draw_point(Point::new(ball.x +  y, ball.y - x));
+        drawer.draw_point(Point::new(ball.x - y, ball.y - x));
+    }
+}
 
 fn draw_paddle(drawer: &mut RenderDrawer, paddle: &mut Paddle) {
     drawer.set_draw_color(Color::RGB(255, 157, 0));
@@ -19,18 +52,22 @@ fn draw_paddle(drawer: &mut RenderDrawer, paddle: &mut Paddle) {
     drawer.draw_rect(Rect::new(paddle.x, paddle.y, paddle.width, paddle.height));
 }
 
-fn draw(drawer: &mut RenderDrawer, paddle1: &mut Paddle, paddle2: &mut Paddle) {
+fn draw(drawer: &mut RenderDrawer, paddle1: &mut Paddle, paddle2: &mut Paddle, ball: &mut Ball) {
     drawer.set_draw_color(Color::RGB(0, 0, 0));
     drawer.clear();
     draw_paddle(drawer, paddle1);
     draw_paddle(drawer, paddle2);
+    draw_circle(drawer, ball);
     drawer.present();
 }
 
 pub fn main() {
+    let window_width = 1200;
+    let mut window_height = 800;
+
     let sdl_context = sdl2::init(sdl2::INIT_VIDEO).unwrap();
 
-    let window = match Window::new(&sdl_context, "PWONG", WindowPos::PosCentered, WindowPos::PosCentered, 1200, 800, RESIZABLE) {
+    let window = match Window::new(&sdl_context, "PWONG", WindowPos::PosCentered, WindowPos::PosCentered, window_width, window_height, RESIZABLE) {
         Ok(window) => window,
         Err(err) => panic!("failed to create window: {}", err)
     };
@@ -40,10 +77,12 @@ pub fn main() {
         Err(err) => panic!("failed to create renderer: {}", err)
     };
 
+    let mut p1 = Paddle::new(0, 40, window_height, 40, 100);
+    let mut p2 = Paddle::new(1160, 40, window_height, 40, 100);
+
+    let mut b = Ball::new(120, 40, 15, -1, 0);
     let mut keymap = KeyPressMap::new();
 
-    let mut p1 = Paddle::new(0, 40, 800, 40, 100);
-    let mut p2 = Paddle::new(760, 40, 800, 40, 100);
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump();
@@ -59,7 +98,10 @@ pub fn main() {
                 Event::Quit {..} | Event::KeyDown { keycode: KeyCode::Escape, .. } => {
                     running = false
                 },
-                Event::Window { win_event_id: WindowEventId::Resized, .. } => { was_resized = true },
+                Event::Window { win_event_id: WindowEventId::Resized, data2, .. } => {
+                    window_height = data2;
+                    was_resized = true;
+                },
                 Event::KeyDown{ keycode, .. } => keymap.press(keycode),
                 Event::KeyUp{ keycode, .. } => keymap.release(keycode),
                 _ => {}
@@ -103,6 +145,9 @@ pub fn main() {
             _ => PaddleDirection::NONE
         };
 
-        draw(&mut drawer, &mut p1, &mut p2);
+        draw(&mut drawer, &mut p1, &mut p2, &mut b);
+        
+        // Update positions
+        b.update(&p1, &p2, window_height);
     }
 }
