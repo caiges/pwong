@@ -25,16 +25,16 @@ fn draw_circle(drawer: &mut RenderDrawer, ball: &mut Ball) {
     drawer.draw_point(Point::new(ball.y, ball.y - ball.r));
     drawer.draw_point(Point::new(ball.x + ball.r, ball.y));
     drawer.draw_point(Point::new(ball.x - ball.r, ball.y));
- 
+
     while x < y {
-        if f >= 0 { 
+        if f >= 0 {
             y -= 1;
             ddf_y += 2;
             f += ddf_y;
         }
         x += 1;
         ddf_x += 2;
-        f += ddf_x;  
+        f += ddf_x;
         drawer.draw_point(Point::new(ball.x + x, ball.y + y));
         drawer.draw_point(Point::new(ball.x - x, ball.y + y));
         drawer.draw_point(Point::new(ball.x + x, ball.y - y));
@@ -62,7 +62,7 @@ fn draw(drawer: &mut RenderDrawer, paddle1: &mut Paddle, paddle2: &mut Paddle, b
 }
 
 pub fn main() {
-    let window_width = 1200;
+    let mut window_width = 1200;
     let mut window_height = 800;
 
     let sdl_context = sdl2::init(sdl2::INIT_VIDEO).unwrap();
@@ -91,39 +91,32 @@ pub fn main() {
         // Limit to 60 FPS
         thread::sleep_ms(17);
 
-        let mut was_resized = false;
-
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit {..} | Event::KeyDown { keycode: KeyCode::Escape, .. } => {
                     running = false
                 },
-                Event::Window { win_event_id: WindowEventId::Resized, data2, .. } => {
+                Event::Window { win_event_id: WindowEventId::Resized, data1, data2, .. } => {
+                    window_width = data1;
                     window_height = data2;
-                    was_resized = true;
+                    if window_width != p2.x + p2.width {
+                        p2.x = window_width - p2.width;
+                    }
+                    if window_height != p1.max_y {
+                        p1.max_y = window_height;
+                        p2.max_y = window_height;
+                    }
+
+                    if window_height < p1.y + p1.height {
+                        p1.y = window_height - p1.height;
+                    }
+                    if window_height < p2.y + p2.height {
+                        p2.y = window_height - p2.height;
+                    }
                 },
                 Event::KeyDown{ keycode, .. } => keymap.press(keycode),
                 Event::KeyUp{ keycode, .. } => keymap.release(keycode),
                 _ => {}
-            }
-        }
-
-        if was_resized {
-            let win_properties = renderer.window_properties(&event_pump).unwrap();
-            let (win_width, win_height) = win_properties.get_size();
-            if win_width != p2.x + p2.width {
-                p2.x = win_width - p2.width;
-            }
-            if win_height != p1.max_y {
-                p1.max_y = win_height;
-                p2.max_y = win_height;
-            }
-
-            if win_height < p1.y + p1.height {
-                p1.y = win_height - p1.height;
-            }
-            if win_height < p2.y + p2.height {
-                p2.y = win_height - p2.height;
             }
         }
 
@@ -146,7 +139,7 @@ pub fn main() {
         };
 
         draw(&mut drawer, &mut p1, &mut p2, &mut b);
-        
+
         // Update positions
         b.update(&p1, &p2, window_height);
     }
