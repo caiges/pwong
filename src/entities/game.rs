@@ -68,6 +68,7 @@ impl Game {
             self.move_objects();
             self.wipe(&mut renderer);
             self.draw(&mut renderer);
+            self.check_for_score();
             thread::sleep_ms(17);
         }
     }
@@ -145,6 +146,21 @@ impl Game {
         drawer.present();
     }
 
+    // In lieu of a more structured player type and event system, monitor the x coordinate of the ball, score for the appropriate player
+    pub fn check_for_score(&mut self) {
+        if self.ball.x - self.ball.r <= 0 {
+            self.score(1);
+        } else if self.ball.x + self.ball.r >= self.court.width {
+            self.score(0);
+        }
+    }
+
+    // Score for the given player index and reset
+    pub fn score(&mut self, player_index: i32) {
+        self.score[player_index as usize] += 1;
+        self.reset();
+    }
+
     pub fn reset(&mut self) {
         self.score = [0,0];
         for player in self.players.iter_mut() {
@@ -154,6 +170,7 @@ impl Game {
         self.ball.y = self.court.height / 2 - self.ball.r / 2;
         self.ball.vx = INITIAL_BALL_VX;
         self.ball.vy = INITIAL_BALL_VY;
+        self.paused = true;
     }
 
     pub fn pause(&mut self) {
