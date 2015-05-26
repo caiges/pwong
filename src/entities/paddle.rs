@@ -1,4 +1,9 @@
+extern crate sdl2;
+
 use entities::bounds::BoundingBox;
+
+use self::sdl2::rect::Rect;
+
 
 static DEFAULT_VELOCITY : f32 = 5f32;
 static MAX_VELOCITY : f32 = 40f32;
@@ -39,7 +44,11 @@ impl Paddle {
         }
 	}
 
-    pub fn move_it(&mut self) {
+    pub fn get_rect(&mut self) -> Rect {
+        return Rect::new(self.x, self.y, self.width, self.height)
+    }
+
+    pub fn update(&mut self) {
         let multiplier = match self.direction {
             PaddleDirection::UP => MULTIPLIER_UP,
             PaddleDirection::DOWN => MULTIPLIER_DOWN,

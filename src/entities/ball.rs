@@ -1,7 +1,11 @@
+extern crate sdl2;
+
 use std::f32::{consts};
 
 use entities::bounds::BoundingBox;
 use entities::paddle::Paddle;
+
+use self::sdl2::rect::Point;
 
 const SPEED: i32 = 2;
 const MAXBOUNCEANGLE: f32 = (5.0 * consts::PI) / 12.0;
@@ -26,6 +30,39 @@ impl Ball {
 			bounding_box: BoundingBox::new(x - r, y - r, r * 2, r * 2)
 		}
 	}
+
+    pub fn get_points(&mut self) -> Vec<Point> {
+        let mut points = Vec::new();
+        let mut f = 1 - self.r;
+        let mut ddf_x = 1;
+        let mut ddf_y = -2 * self.r;
+        let mut x = 0;
+        let mut y = self.r;
+        points.push(Point::new(self.x, self.y + self.r));
+        points.push(Point::new(self.y, self.y - self.r));
+        points.push(Point::new(self.x + self.r, self.y));
+        points.push(Point::new(self.x - self.r, self.y));
+
+        while x < y {
+            if f >= 0 {
+                y -= 1;
+                ddf_y += 2;
+                f += ddf_y;
+            }
+            x += 1;
+            ddf_x += 2;
+            f += ddf_x;
+            points.push(Point::new(self.x + x, self.y + y));
+            points.push(Point::new(self.x - x, self.y + y));
+            points.push(Point::new(self.x + x, self.y - y));
+            points.push(Point::new(self.x - x, self.y - y));
+            points.push(Point::new(self.x + y, self.y + x));
+            points.push(Point::new(self.x - y, self.y + x));
+            points.push(Point::new(self.x + y, self.y - x));
+            points.push(Point::new(self.x - y, self.y - x));
+        }
+        return points;
+    }
 
 	// Determine the y value of intersection and return it
 	pub fn intersection(&self, paddle: &Paddle) -> i32 {
@@ -80,7 +117,7 @@ mod tests {
 	#[test]
 	fn test_intersection() {
 		let paddle = Paddle::new(0, 40, 1000, 10, 100);
-		let mut ball = Ball::new(10, 40, 10, 1, 1); 
+		let mut ball = Ball::new(10, 40, 10, 1, 1);
 
 		assert!(ball.intersection(&paddle) == paddle.y);
 
@@ -94,7 +131,7 @@ mod tests {
 	#[test]
 	fn test_bounce_angle() {
 		let paddle = Paddle::new(0, 40, 1000, 10, 100);
-		let ball = Ball::new(10, 50, 10, 1, 1); 
+		let ball = Ball::new(10, 50, 10, 1, 1);
 		let bounce_angle = ball.bounce_angle(&paddle);
 
 		// Remember boys and girls, directly comparing floats is not accurate.
