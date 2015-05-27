@@ -13,6 +13,7 @@ const MAXBOUNCEANGLE: f32 = (5.0 * consts::PI) / 12.0;
 pub struct Ball {
 	pub x: i32,
 	pub y: i32,
+  pub min_y: i32,
 	pub r: i32,
 	pub vx: i32,
 	pub vy: i32,
@@ -20,10 +21,11 @@ pub struct Ball {
 }
 
 impl Ball {
-	pub fn new(x: i32, y: i32, r: i32, vx: i32, vy: i32) -> Ball {
+	pub fn new(x: i32, y: i32, min_y: i32, r: i32, vx: i32, vy: i32) -> Ball {
 		Ball{
 			x: x,
 			y: y,
+      min_y: min_y,
 			r: r,
 			vx: vx,
 			vy: vy,
@@ -103,7 +105,7 @@ impl Ball {
 
 			self.vx = -(bounce_angle.cos() * SPEED as f32) as i32;
 			self.vy = -(bounce_angle.sin() * SPEED as f32) as i32;
-		} else if self.y - self.r <= 0 || self.y + self.r >= max_y {
+		} else if self.y - self.r <= self.min_y || self.y + self.r >= max_y {
 			self.vy = -self.vy;
 		}
 	}

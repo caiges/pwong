@@ -20,6 +20,7 @@ pub enum PaddleDirection {
 pub struct Paddle {
 	pub x: i32,
 	pub y: i32,
+    pub min_y: i32,
 	pub max_y: i32,
 	pub width: i32,
 	pub height: i32,
@@ -30,10 +31,11 @@ pub struct Paddle {
 }
 
 impl Paddle {
-	pub fn new(x: i32, y: i32, max_y: i32, width: i32, height: i32) -> Paddle {
+	pub fn new(x: i32, y: i32, min_y: i32, max_y: i32, width: i32, height: i32) -> Paddle {
 		Paddle{
             x: x,
             y: y,
+            min_y: min_y,
             max_y: max_y,
             width: width,
             height: height,
@@ -62,8 +64,8 @@ impl Paddle {
         self.multiplier = multiplier;
 
         let new_y = self.y + (multiplier * self.velocity) as i32;
-        if new_y < 0 {
-            self.y = 0;
+        if new_y < self.min_y {
+            self.y = self.min_y;
         }
         else if new_y > self.max_y - self.height {
             self.y = self.max_y - self.height;

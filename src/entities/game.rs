@@ -19,6 +19,7 @@ static PADDLE_HEIGHT : i32 = 100;
 static BALL_RADIUS : i32 = 15;
 static INITIAL_BALL_VX : i32 = -1;
 static INITIAL_BALL_VY : i32 = 0;
+static GUTTER_HEIGHT : i32 = 60;
 
 
 pub struct Game {
@@ -36,11 +37,11 @@ impl Game {
     pub fn new(width: i32, height: i32) -> Game {
         let court = Court::new(width, height);
         let paddle_y = height / 2 - PADDLE_HEIGHT / 2;
-        let p1 = Paddle::new(0, paddle_y, height, PADDLE_WIDTH, PADDLE_HEIGHT);
-        let p2 = Paddle::new(width - PADDLE_WIDTH, paddle_y, height, PADDLE_WIDTH, PADDLE_HEIGHT);
+        let p1 = Paddle::new(0, paddle_y, GUTTER_HEIGHT, height, PADDLE_WIDTH, PADDLE_HEIGHT);
+        let p2 = Paddle::new(width - PADDLE_WIDTH, paddle_y, GUTTER_HEIGHT, height, PADDLE_WIDTH, PADDLE_HEIGHT);
         let ball_x = width / 2 - BALL_RADIUS / 2;
         let ball_y = height / 2 - BALL_RADIUS / 2;
-        let ball = Ball::new(ball_x, ball_y, BALL_RADIUS, INITIAL_BALL_VX, INITIAL_BALL_VY);
+        let ball = Ball::new(ball_x, ball_y, GUTTER_HEIGHT, BALL_RADIUS, INITIAL_BALL_VX, INITIAL_BALL_VY);
 
         Game{
             running: true,
