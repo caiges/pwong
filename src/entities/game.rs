@@ -158,11 +158,10 @@ impl Game {
     // Score for the given player index and reset
     pub fn score(&mut self, player_index: i32) {
         self.score[player_index as usize] += 1;
-        self.reset();
+        self.restart();
     }
 
-    pub fn reset(&mut self) {
-        self.score = [0,0];
+    fn reset_entities(&mut self) {
         for player in self.players.iter_mut() {
             player.y = self.court.height / 2 - player.height / 2;
         }
@@ -170,6 +169,16 @@ impl Game {
         self.ball.y = self.court.height / 2 - self.ball.r / 2;
         self.ball.vx = INITIAL_BALL_VX;
         self.ball.vy = INITIAL_BALL_VY;
+    }
+
+    pub fn restart(&mut self) {
+        self.reset_entities();
+        self.paused = true;
+    }
+
+    pub fn reset(&mut self) {
+        self.score = [0,0];
+        self.reset_entities();
         self.paused = true;
     }
 
