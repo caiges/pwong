@@ -39,7 +39,7 @@ impl Ball {
         let mut x = 0;
         let mut y = self.r;
         points.push(Point::new(self.x, self.y + self.r));
-        points.push(Point::new(self.y, self.y - self.r));
+        points.push(Point::new(self.x, self.y - self.r));
         points.push(Point::new(self.x + self.r, self.y));
         points.push(Point::new(self.x - self.r, self.y));
 
