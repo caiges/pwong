@@ -7,7 +7,7 @@ use entities::paddle::Paddle;
 
 use self::sdl2::rect::Point;
 
-const SPEED: i32 = 2;
+const SPEED: i32 = 4;
 const MAXBOUNCEANGLE: f32 = (5.0 * consts::PI) / 12.0;
 
 pub struct Ball {

@@ -52,10 +52,10 @@ impl Paddle {
         let multiplier = match self.direction {
             PaddleDirection::UP => MULTIPLIER_UP,
             PaddleDirection::DOWN => MULTIPLIER_DOWN,
-            PaddleDirection::NONE => return,
+            PaddleDirection::NONE => 0f32
         };
 
-        if (self.multiplier < 0f32) != (multiplier < 0f32) {
+        if (self.multiplier < 0f32) != (multiplier < 0f32) || multiplier == 0f32 {
             self.velocity = DEFAULT_VELOCITY;
         }
 

@@ -17,7 +17,7 @@ use std::thread;
 static PADDLE_WIDTH : i32 = 40;
 static PADDLE_HEIGHT : i32 = 100;
 static BALL_RADIUS : i32 = 15;
-static INITIAL_BALL_VX : i32 = -1;
+static INITIAL_BALL_VX : i32 = -4;
 static INITIAL_BALL_VY : i32 = 0;
 
 
