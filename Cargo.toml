@@ -12,9 +12,8 @@ path = "src/lib.rs"
 name = "main"
 path = "src/main.rs"
 
-[dependencies.sdl2]
-git = "https://github.com/AngryLawyer/rust-sdl2"
-
 [dependencies]
 time = "*"
 num = "*"
+sdl2 = "0.30"
+gl = "0.6.0"
