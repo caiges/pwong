@@ -128,8 +128,8 @@ impl Game {
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => self.quit(),
                 Event::KeyDown { keycode: Some(Keycode::Space), .. } => self.pause(),
                 Event::KeyDown { keycode: Some(Keycode::R), .. } => self.reset(),
-                Event::KeyDown { keycode, .. } => self.keymap.press(keycode),
-                Event::KeyUp { keycode, .. } => self.keymap.release(keycode),
+                Event::KeyDown { keycode, .. } => self.keymap.press(keycode.unwrap()),
+                Event::KeyUp { keycode, .. } => self.keymap.release(keycode.unwrap()),
                 Event::Window { win_event: WindowEvent::Resized(data1, data2), .. } => {
                     self.handle_resize(data1, data2)
                 }
@@ -161,21 +161,19 @@ impl Game {
         }
     }
 
-    pub fn wipe(&mut self, renderer: &mut Canvas<Window>) {
-        let mut drawer = renderer.drawer();
-        drawer.set_draw_color(Color::RGB(0, 0, 0));
-        drawer.clear();
+    pub fn wipe(&mut self, canvas: &mut Canvas<Window>) {
+        canvas.set_draw_color(Color::RGB(0, 0, 0));
+        canvas.clear();
     }
 
-    pub fn draw(&mut self, renderer: &mut Canvas<Window>) {
-        let mut drawer = renderer.drawer();
-        drawer.set_draw_color(Color::RGB(255, 157, 0));
+    pub fn draw(&mut self, canvas: &mut Canvas<Window>) {
+        canvas.set_draw_color(Color::RGB(255, 157, 0));
         for player in self.players.iter_mut() {
-            drawer.draw_rect(player.get_rect());
+            canvas.draw_rect(player.get_rect());
         }
         let points = self.ball.get_points();
-        drawer.draw_points(&points[..]);
-        drawer.present();
+        canvas.draw_points(&points[..]);
+        canvas.present();
     }
 
     // In lieu of a more structured player type and event system, monitor the x coordinate of the ball, score for the appropriate player

@@ -5,33 +5,33 @@ use entities::bounds::BoundingBox;
 use self::sdl2::rect::Rect;
 
 
-static DEFAULT_VELOCITY : f32 = 5f32;
-static MAX_VELOCITY : f32 = 40f32;
-static MULTIPLIER_UP : f32 = -1f32;
-static MULTIPLIER_DOWN : f32 = 1f32;
-static ACCELERATION_FACTOR : f32 = 1.05;
+static DEFAULT_VELOCITY: f32 = 5f32;
+static MAX_VELOCITY: f32 = 40f32;
+static MULTIPLIER_UP: f32 = -1f32;
+static MULTIPLIER_DOWN: f32 = 1f32;
+static ACCELERATION_FACTOR: f32 = 1.05;
 
 pub enum PaddleDirection {
     UP,
     DOWN,
-    NONE
+    NONE,
 }
 
 pub struct Paddle {
-	pub x: i32,
-	pub y: i32,
-	pub max_y: i32,
-	pub width: i32,
-	pub height: i32,
+    pub x: i32,
+    pub y: i32,
+    pub max_y: i32,
+    pub width: i32,
+    pub height: i32,
     pub velocity: f32,
     pub direction: PaddleDirection,
     pub multiplier: f32,
-    pub bounding_box: BoundingBox
+    pub bounding_box: BoundingBox,
 }
 
 impl Paddle {
-	pub fn new(x: i32, y: i32, max_y: i32, width: i32, height: i32) -> Paddle {
-		Paddle{
+    pub fn new(x: i32, y: i32, max_y: i32, width: i32, height: i32) -> Paddle {
+        Paddle {
             x: x,
             y: y,
             max_y: max_y,
@@ -40,19 +40,19 @@ impl Paddle {
             velocity: DEFAULT_VELOCITY,
             direction: PaddleDirection::NONE,
             multiplier: 0f32,
-            bounding_box: BoundingBox::new(x, y, width, height)
+            bounding_box: BoundingBox::new(x, y, width, height),
         }
-	}
+    }
 
     pub fn get_rect(&mut self) -> Rect {
-        return Rect::new(self.x, self.y, self.width, self.height)
+        return Rect::new(self.x, self.y, self.width, self.height);
     }
 
     pub fn update(&mut self) {
         let multiplier = match self.direction {
             PaddleDirection::UP => MULTIPLIER_UP,
             PaddleDirection::DOWN => MULTIPLIER_DOWN,
-            PaddleDirection::NONE => 0f32
+            PaddleDirection::NONE => 0f32,
         };
 
         if (self.multiplier < 0f32) != (multiplier < 0f32) || multiplier == 0f32 {
@@ -64,18 +64,15 @@ impl Paddle {
         let new_y = self.y + (multiplier * self.velocity) as i32;
         if new_y < 0 {
             self.y = 0;
-        }
-        else if new_y > self.max_y - self.height {
+        } else if new_y > self.max_y - self.height {
             self.y = self.max_y - self.height;
-        }
-        else {
+        } else {
             self.y = new_y;
 
             let new_velocity = self.velocity * ACCELERATION_FACTOR;
             if new_velocity <= MAX_VELOCITY {
                 self.velocity = new_velocity;
-            }
-            else {
+            } else {
                 self.velocity = MAX_VELOCITY;
             }
         }
@@ -87,12 +84,12 @@ impl Paddle {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
+    use super::*;
 
-	#[test]
-	fn test_movement_and_acceleration() {
-		let mut p1 = Paddle::new(0, 40, 800, 40, 100);
-		assert!(p1.velocity > 0f32);
+    #[test]
+    fn test_movement_and_acceleration() {
+        let mut p1 = Paddle::new(0, 40, 800, 40, 100);
+        assert!(p1.velocity > 0f32);
 
         let mut last_y = p1.y;
         let mut last_vel = p1.velocity;
@@ -133,5 +130,5 @@ mod tests {
         p1.move_it();
         assert!(p1.velocity > 5f32);
         assert!(p1.y < last_y);
-	}
+    }
 }
