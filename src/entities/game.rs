@@ -141,17 +141,25 @@ impl Game {
     pub fn move_objects(&mut self) {
         if !self.paused {
             let p1_key = self.keymap.last_pressed(&[Keycode::A, Keycode::Z]);
-            self.players[0].direction = match p1_key {
-                Keycode::A => PaddleDirection::UP,
-                Keycode::Z => PaddleDirection::DOWN,
-                _ => PaddleDirection::NONE,
-            };
+
+            if p1_key.is_some() {
+                self.players[0].direction = match p1_key.unwrap() {
+                    Keycode::A => PaddleDirection::UP,
+                    Keycode::Z => PaddleDirection::DOWN,
+                    _ => PaddleDirection::NONE,
+                };
+            }
+
             let p2_key = self.keymap.last_pressed(&[Keycode::Quote, Keycode::Slash]);
-            self.players[1].direction = match p2_key {
-                Keycode::Quote => PaddleDirection::UP,
-                Keycode::Slash => PaddleDirection::DOWN,
-                _ => PaddleDirection::NONE,
-            };
+
+            if p2_key.is_some() {
+                self.players[1].direction = match p2_key.unwrap() {
+                    Keycode::Quote => PaddleDirection::UP,
+                    Keycode::Slash => PaddleDirection::DOWN,
+                    _ => PaddleDirection::NONE,
+                };
+            }
+
             for player in self.players.iter_mut() {
                 player.update()
             }

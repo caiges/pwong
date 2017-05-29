@@ -38,16 +38,18 @@ impl KeyPressMap {
         }
     }
 
-    pub fn last_pressed(&mut self, keys: &[Keycode]) -> Keycode {
-        let mut last_key = Keycode::Unknown;
+    pub fn last_pressed(&mut self, keys: &[Keycode]) -> Option<Keycode> {
+        let mut last_key: Option<Keycode> = None;
         let mut last_time = 0u64;
+
         for key in keys {
             let i = self.key_to_index(*key);
             if self.pressed[i] > last_time {
-                last_key = *key;
+                last_key = Some(*key);
                 last_time = self.pressed[i];
             }
         }
+
         return last_key;
     }
 
@@ -71,16 +73,25 @@ mod tests {
         map.press(Keycode::A);
         assert!(map.is_pressed(Keycode::A) == true);
         assert!(map.is_pressed(Keycode::B) == false);
-        assert!(map.last_pressed(&[Keycode::A, Keycode::B]) == Keycode::A);
+        match map.last_pressed(&[Keycode::A, Keycode::B]) {
+            Some(key) => assert!(key == Keycode::A),
+            None => assert!(false)
+        }
 
         map.press(Keycode::B);
         assert!(map.is_pressed(Keycode::A) == true);
         assert!(map.is_pressed(Keycode::B) == true);
-        assert!(map.last_pressed(&[Keycode::A, KeyCode::B]) == Keycode::B);
+        match map.last_pressed(&[Keycode::A, Keycode::B]) {
+            Some(key) => assert!(key == Keycode::B),
+            None => assert!(false)
+        }
 
         map.release(Keycode::A);
         assert!(map.is_pressed(Keycode::A) == false);
         assert!(map.is_pressed(Keycode::B) == true);
-        assert!(map.last_pressed(&[Keycode::A, Keycode::B]) == Keycode::B);
+        match map.last_pressed(&[Keycode::A, Keycode::B]) {
+            Some(key) => assert!(key == Keycode::B),
+            None => assert!(false)
+        }
     }
 }
