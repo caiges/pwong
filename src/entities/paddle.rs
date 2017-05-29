@@ -45,7 +45,7 @@ impl Paddle {
     }
 
     pub fn get_rect(&mut self) -> Rect {
-        return Rect::new(self.x, self.y, self.width, self.height);
+        return Rect::new(self.x, self.y, self.width as u32, self.height as u32);
     }
 
     pub fn update(&mut self) {

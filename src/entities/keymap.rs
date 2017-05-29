@@ -2,22 +2,26 @@ extern crate num;
 extern crate sdl2;
 extern crate time;
 
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 use self::sdl2::keyboard::Keycode;
 use self::num::ToPrimitive;
 
 static KEY_COUNT: usize = 235;
 
 pub struct KeyPressMap {
-    pub pressed: [u64; 235],
+    pub pressed: [u64; 235]
 }
 
 impl KeyPressMap {
     pub fn new() -> KeyPressMap {
-        KeyPressMap { pressed: [0u64; 235] }
+        KeyPressMap{pressed: [0u64; 235]}
     }
 
     fn key_to_index(&mut self, key: Keycode) -> usize {
-        return key.to_isize().unwrap() as usize;
+        let mut hasher = DefaultHasher::new();
+        key.hash(&mut hasher);
+        return hasher.finish() as usize;
     }
 
     pub fn press(&mut self, key: Keycode) {
