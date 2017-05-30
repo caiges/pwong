@@ -148,8 +148,8 @@ impl Game {
                         Keycode::Z => self.players[0].direction = PaddleDirection::DOWN,
                         _ => {}
                     };
-                },
-                None => self.players[0].direction = PaddleDirection::NONE
+                }
+                None => self.players[0].direction = PaddleDirection::NONE,
             };
 
             match self.keymap.last_pressed(&[Keycode::Quote, Keycode::Slash]) {
@@ -159,8 +159,8 @@ impl Game {
                         Keycode::Slash => self.players[1].direction = PaddleDirection::DOWN,
                         _ => {}
                     };
-                },
-                None => self.players[1].direction = PaddleDirection::NONE
+                }
+                None => self.players[1].direction = PaddleDirection::NONE,
             };
 
             for player in self.players.iter_mut() {
