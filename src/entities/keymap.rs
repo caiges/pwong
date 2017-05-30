@@ -19,9 +19,7 @@ impl KeyPressMap {
     }
 
     fn key_to_index(&mut self, key: Keycode) -> usize {
-        let mut hasher = DefaultHasher::new();
-        key.hash(&mut hasher);
-        return hasher.finish() as usize;
+        return key as usize;
     }
 
     pub fn press(&mut self, key: Keycode) {
