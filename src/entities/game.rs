@@ -143,10 +143,10 @@ impl Game {
 
             match self.keymap.last_pressed(&[Keycode::A, Keycode::Z]) {
                 Some(key) => {
-                    self.players[0].direction = match key {
-                        Keycode::A => PaddleDirection::UP,
-                        Keycode::Z => PaddleDirection::DOWN,
-                        _ => PaddleDirection::NONE
+                    match key {
+                        Keycode::A => self.players[0].direction = PaddleDirection::UP,
+                        Keycode::Z => self.players[0].direction = PaddleDirection::DOWN,
+                        _ => {}
                     };
                 },
                 None => self.players[0].direction = PaddleDirection::NONE
@@ -154,10 +154,10 @@ impl Game {
 
             match self.keymap.last_pressed(&[Keycode::Quote, Keycode::Slash]) {
                 Some(key) => {
-                    self.players[1].direction = match key {
-                        Keycode::Quote => PaddleDirection::UP,
-                        Keycode::Slash => PaddleDirection::DOWN,
-                        _ => PaddleDirection::NONE
+                    match key {
+                        Keycode::Quote => self.players[1].direction = PaddleDirection::UP,
+                        Keycode::Slash => self.players[1].direction = PaddleDirection::DOWN,
+                        _ => {}
                     };
                 },
                 None => self.players[1].direction = PaddleDirection::NONE
