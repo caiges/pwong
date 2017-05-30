@@ -140,29 +140,28 @@ impl Game {
 
     pub fn move_objects(&mut self) {
         if !self.paused {
-            let p1_key = self.keymap.last_pressed(&[Keycode::A, Keycode::Z]);
-                
-            if p1_key.is_some() {
-                self.players[0].direction = match p1_key.unwrap() {
-                    Keycode::A => PaddleDirection::UP,
-                    Keycode::Z => PaddleDirection::DOWN,
-                    _ => PaddleDirection::NONE,
-                };
-            } else {
-                self.players[0].direction = PaddleDirection::NONE;
-            }
 
-            let p2_key = self.keymap.last_pressed(&[Keycode::Quote, Keycode::Slash]);
+            match self.keymap.last_pressed(&[Keycode::A, Keycode::Z]) {
+                Some(key) => {
+                    self.players[0].direction = match key {
+                        Keycode::A => PaddleDirection::UP,
+                        Keycode::Z => PaddleDirection::DOWN,
+                        _ => PaddleDirection::NONE
+                    };
+                },
+                None => self.players[0].direction = PaddleDirection::NONE
+            };
 
-            if p2_key.is_some() {
-                self.players[1].direction = match p2_key.unwrap() {
-                    Keycode::Quote => PaddleDirection::UP,
-                    Keycode::Slash => PaddleDirection::DOWN,
-                    _ => PaddleDirection::NONE,
-                };
-            } else {
-                self.players[1].direction = PaddleDirection::NONE;
-            }
+            match self.keymap.last_pressed(&[Keycode::Quote, Keycode::Slash]) {
+                Some(key) => {
+                    self.players[1].direction = match key {
+                        Keycode::Quote => PaddleDirection::UP,
+                        Keycode::Slash => PaddleDirection::DOWN,
+                        _ => PaddleDirection::NONE
+                    };
+                },
+                None => self.players[1].direction = PaddleDirection::NONE
+            };
 
             for player in self.players.iter_mut() {
                 player.update()
