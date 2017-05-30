@@ -1,25 +1,34 @@
 extern crate sdl2;
+extern crate gl;
 
 use super::keymap::KeyPressMap;
 use super::paddle::{Paddle, PaddleDirection};
 use super::court::Court;
 use super::ball::Ball;
 
-use self::sdl2::sdl::Sdl;
-use self::sdl2::keycode::KeyCode;
-use self::sdl2::event::{Event, EventPump, WindowEventId};
-use self::sdl2::video::{Window, WindowPos, RESIZABLE};
-use self::sdl2::render::{RenderDriverIndex, SOFTWARE, Renderer};
+use self::sdl2::EventPump;
+use self::sdl2::keyboard::Keycode;
+use self::sdl2::event::{Event, WindowEvent};
+use self::sdl2::video::{Window, WindowPos};
+use self::sdl2::render::Canvas;
 use self::sdl2::pixels::Color;
 
 use std::thread;
 
-static PADDLE_WIDTH : i32 = 40;
-static PADDLE_HEIGHT : i32 = 100;
-static BALL_RADIUS : i32 = 15;
-static INITIAL_BALL_VX : i32 = -4;
-static INITIAL_BALL_VY : i32 = 0;
+static PADDLE_WIDTH: i32 = 40;
+static PADDLE_HEIGHT: i32 = 100;
+static BALL_RADIUS: i32 = 15;
+static INITIAL_BALL_VX: i32 = -4;
+static INITIAL_BALL_VY: i32 = 0;
 
+fn find_sdl_gl_driver() -> Option<u32> {
+    for (index, item) in sdl2::render::drivers().enumerate() {
+        if item.name == "opengl" {
+            return Some(index as u32);
+        }
+    }
+    None
+}
 
 pub struct Game {
     running: bool,
@@ -37,37 +46,56 @@ impl Game {
         let court = Court::new(width, height);
         let paddle_y = height / 2 - PADDLE_HEIGHT / 2;
         let p1 = Paddle::new(0, paddle_y, height, PADDLE_WIDTH, PADDLE_HEIGHT);
-        let p2 = Paddle::new(width - PADDLE_WIDTH, paddle_y, height, PADDLE_WIDTH, PADDLE_HEIGHT);
+        let p2 = Paddle::new(width - PADDLE_WIDTH,
+                             paddle_y,
+                             height,
+                             PADDLE_WIDTH,
+                             PADDLE_HEIGHT);
         let ball_x = width / 2 - BALL_RADIUS / 2;
         let ball_y = height / 2 - BALL_RADIUS / 2;
-        let ball = Ball::new(ball_x, ball_y, BALL_RADIUS, INITIAL_BALL_VX, INITIAL_BALL_VY);
+        let ball = Ball::new(ball_x,
+                             ball_y,
+                             BALL_RADIUS,
+                             INITIAL_BALL_VX,
+                             INITIAL_BALL_VY);
 
-        Game{
+        Game {
             running: true,
             paused: true,
             score: [0, 0],
             court: court,
             players: [p1, p2],
             ball: ball,
-            keymap: KeyPressMap::new()
+            keymap: KeyPressMap::new(),
         }
     }
 
-    pub fn run(&mut self, sdl_context: Sdl) {
-        let mut event_pump = sdl_context.event_pump();
-        let window = match Window::new(&sdl_context, "PWONG", WindowPos::PosCentered, WindowPos::PosCentered, self.court.width, self.court.height, RESIZABLE) {
-            Ok(window) => window,
-            Err(err) => panic!("failed to create window: {}", err)
-        };
-        let mut renderer = match Renderer::from_window(window, RenderDriverIndex::Auto, SOFTWARE) {
-            Ok(renderer) => renderer,
-            Err(err) => panic!("failed to create renderer: {}", err)
-        };
+    pub fn run(&mut self) {
+        let sdl_context = sdl2::init().unwrap();
+        let video_subsystem = sdl_context.video().unwrap();
+        let window = video_subsystem
+            .window("Window", 800, 600)
+            .opengl()
+            .position_centered()
+            .resizable()
+            .build()
+            .unwrap();
+        let mut canvas = window
+            .into_canvas()
+            .index(find_sdl_gl_driver().unwrap())
+            .build()
+            .unwrap();
+
+        gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
+        canvas.window().gl_set_context_to_current();
+
+        let mut event_pump = sdl_context.event_pump().unwrap();
+
         while self.running {
             self.capture_events(&mut event_pump);
             self.move_objects();
-            self.wipe(&mut renderer);
-            self.draw(&mut renderer);
+            self.wipe(&mut canvas);
+            self.draw(&mut canvas);
             self.check_for_score();
             thread::sleep_ms(17);
         }
@@ -96,54 +124,67 @@ impl Game {
     pub fn capture_events(&mut self, event_pump: &mut EventPump) {
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit {..} | Event::KeyDown { keycode: KeyCode::Escape, .. } => self.quit(),
-                Event::KeyDown{ keycode: KeyCode::Space, .. } => self.pause(),
-                Event::KeyDown{ keycode: KeyCode::R, .. } => self.reset(),
-                Event::KeyDown{ keycode, .. } => self.keymap.press(keycode),
-                Event::KeyUp{ keycode, .. } => self.keymap.release(keycode),
-                Event::Window { win_event_id: WindowEventId::Resized, data1, data2, .. } => self.handle_resize(data1, data2),
+                Event::Quit { .. } |
+                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => self.quit(),
+                Event::KeyDown { keycode: Some(Keycode::Space), .. } => self.pause(),
+                Event::KeyDown { keycode: Some(Keycode::R), .. } => self.reset(),
+                Event::KeyDown { keycode, .. } => self.keymap.press(keycode.unwrap()),
+                Event::KeyUp { keycode, .. } => self.keymap.release(keycode.unwrap()),
+                Event::Window { win_event: WindowEvent::Resized(data1, data2), .. } => {
+                    self.handle_resize(data1, data2)
+                }
                 _ => {}
             }
         }
     }
 
     pub fn move_objects(&mut self) {
-        if ! self.paused {
-            let p1_key = self.keymap.last_pressed(&[KeyCode::A, KeyCode::Z]);
-            self.players[0].direction = match p1_key {
-                KeyCode::A => PaddleDirection::UP,
-                KeyCode::Z => PaddleDirection::DOWN,
-                _ => PaddleDirection::NONE
+        if !self.paused {
+
+            match self.keymap.last_pressed(&[Keycode::A, Keycode::Z]) {
+                Some(key) => {
+                    match key {
+                        Keycode::A => self.players[0].direction = PaddleDirection::UP,
+                        Keycode::Z => self.players[0].direction = PaddleDirection::DOWN,
+                        _ => {}
+                    };
+                },
+                None => self.players[0].direction = PaddleDirection::NONE
             };
-            let p2_key = self.keymap.last_pressed(&[KeyCode::Quote, KeyCode::Slash]);
-            self.players[1].direction = match p2_key {
-                KeyCode::Quote => PaddleDirection::UP,
-                KeyCode::Slash => PaddleDirection::DOWN,
-                _ => PaddleDirection::NONE
+
+            match self.keymap.last_pressed(&[Keycode::Quote, Keycode::Slash]) {
+                Some(key) => {
+                    match key {
+                        Keycode::Quote => self.players[1].direction = PaddleDirection::UP,
+                        Keycode::Slash => self.players[1].direction = PaddleDirection::DOWN,
+                        _ => {}
+                    };
+                },
+                None => self.players[1].direction = PaddleDirection::NONE
             };
+
             for player in self.players.iter_mut() {
                 player.update()
             }
 
-            self.ball.update(&self.players[0], &self.players[1], self.court.height);
+            self.ball
+                .update(&self.players[0], &self.players[1], self.court.height);
         }
     }
 
-    pub fn wipe(&mut self, renderer: &mut Renderer) {
-        let mut drawer = renderer.drawer();
-        drawer.set_draw_color(Color::RGB(0, 0, 0));
-        drawer.clear();
+    pub fn wipe(&mut self, canvas: &mut Canvas<Window>) {
+        canvas.set_draw_color(Color::RGB(0, 0, 0));
+        canvas.clear();
     }
 
-    pub fn draw(&mut self, renderer: &mut Renderer) {
-        let mut drawer = renderer.drawer();
-        drawer.set_draw_color(Color::RGB(255, 157, 0));
+    pub fn draw(&mut self, canvas: &mut Canvas<Window>) {
+        canvas.set_draw_color(Color::RGB(255, 157, 0));
         for player in self.players.iter_mut() {
-            drawer.draw_rect(player.get_rect());
+            canvas.draw_rect(player.get_rect());
         }
         let points = self.ball.get_points();
-        drawer.draw_points(&points[..]);
-        drawer.present();
+        canvas.draw_points(&points[..]);
+        canvas.present();
     }
 
     // In lieu of a more structured player type and event system, monitor the x coordinate of the ball, score for the appropriate player
@@ -177,13 +218,13 @@ impl Game {
     }
 
     pub fn reset(&mut self) {
-        self.score = [0,0];
+        self.score = [0, 0];
         self.reset_entities();
         self.paused = true;
     }
 
     pub fn pause(&mut self) {
-        self.paused = ! self.paused;
+        self.paused = !self.paused;
     }
 
     pub fn quit(&mut self) {
