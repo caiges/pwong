@@ -74,7 +74,7 @@ impl Game {
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
         let window = video_subsystem
-            .window("Window", 800, 600)
+            .window("Window", self.court.width as u32, self.court.height as u32)
             .opengl()
             .position_centered()
             .resizable()
