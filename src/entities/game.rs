@@ -9,11 +9,12 @@ use super::ball::Ball;
 use self::sdl2::EventPump;
 use self::sdl2::keyboard::Keycode;
 use self::sdl2::event::{Event, WindowEvent};
-use self::sdl2::video::{Window, WindowPos};
+use self::sdl2::video::{Window};
 use self::sdl2::render::Canvas;
 use self::sdl2::pixels::Color;
 
 use std::thread;
+use std::time::Duration;
 
 static PADDLE_WIDTH: i32 = 40;
 static PADDLE_HEIGHT: i32 = 100;
@@ -87,7 +88,10 @@ impl Game {
             .unwrap();
 
         gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
-        canvas.window().gl_set_context_to_current();
+        match canvas.window().gl_set_context_to_current() {
+            Err(why) => panic!("{:?}", why),
+            Ok(_) => {},
+        }
 
         let mut event_pump = sdl_context.event_pump().unwrap();
 
@@ -97,7 +101,7 @@ impl Game {
             self.wipe(&mut canvas);
             self.draw(&mut canvas);
             self.check_for_score();
-            thread::sleep_ms(17);
+            thread::sleep(Duration::from_millis(17));
         }
     }
 
@@ -180,10 +184,16 @@ impl Game {
     pub fn draw(&mut self, canvas: &mut Canvas<Window>) {
         canvas.set_draw_color(Color::RGB(255, 157, 0));
         for player in self.players.iter_mut() {
-            canvas.draw_rect(player.get_rect());
+            match canvas.draw_rect(player.get_rect()) {
+                Err(why) => panic!("{:?}", why),
+                Ok(_) => {},
+            }
         }
         let points = self.ball.get_points();
-        canvas.draw_points(&points[..]);
+        match canvas.draw_points(&points[..]) {
+            Err(why) => panic!("{:?}", why),
+            Ok(_) => {},
+        }
         canvas.present();
     }
 

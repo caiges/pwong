@@ -2,10 +2,7 @@ extern crate num;
 extern crate sdl2;
 extern crate time;
 
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 use self::sdl2::keyboard::Keycode;
-use self::num::ToPrimitive;
 
 static KEY_COUNT: usize = 235;
 
