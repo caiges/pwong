@@ -148,7 +148,7 @@ mod tests {
 		ball.update(&paddle1, &paddle2, 1000);
 
 		// Up and to the right
-		assert!(ball.vx == 1 && ball.vy == -1);
+		assert!(ball.vx == 2 && ball.vy == -2);
 
 		ball.x = 12;
 		ball.y = 95;
@@ -157,7 +157,7 @@ mod tests {
 		ball.update(&paddle1, &paddle2, 1000);
 
 		// Straight across
-		assert!(ball.vx == 1 && ball.vy == 0);
+		assert!(ball.vx == 3 && ball.vy == 0);
 
 		ball.x = 12;
 		ball.y = 110;
@@ -166,6 +166,6 @@ mod tests {
 		ball.update(&paddle1, &paddle2, 1000);
 
 		// Down and to the right
-		assert!(ball.vx == 1 && ball.vy == 1);
+		assert!(ball.vx == 3 && ball.vy == 2);
 	}
 }

@@ -6,11 +6,12 @@ use self::sdl2::rect::Rect;
 
 
 static DEFAULT_VELOCITY: f32 = 5f32;
-static MAX_VELOCITY: f32 = 40f32;
+static MAX_VELOCITY: f32 = 25f32;
 static MULTIPLIER_UP: f32 = -1f32;
 static MULTIPLIER_DOWN: f32 = 1f32;
-static ACCELERATION_FACTOR: f32 = 1.05;
+static ACCELERATION_FACTOR: f32 = 1.075;
 
+#[derive(PartialEq)]
 pub enum PaddleDirection {
     UP,
     DOWN,
@@ -69,11 +70,13 @@ impl Paddle {
         } else {
             self.y = new_y;
 
-            let new_velocity = self.velocity * ACCELERATION_FACTOR;
-            if new_velocity <= MAX_VELOCITY {
-                self.velocity = new_velocity;
-            } else {
-                self.velocity = MAX_VELOCITY;
+            if self.direction != PaddleDirection::NONE {
+                let new_velocity = self.velocity * ACCELERATION_FACTOR;
+                if new_velocity <= MAX_VELOCITY {
+                    self.velocity = new_velocity;
+                } else {
+                    self.velocity = MAX_VELOCITY;
+                }
             }
         }
 
@@ -90,45 +93,64 @@ mod tests {
     fn test_movement_and_acceleration() {
         let mut p1 = Paddle::new(0, 40, 800, 40, 100);
         assert!(p1.velocity > 0f32);
+        assert!(p1.direction == PaddleDirection::NONE);
 
         let mut last_y = p1.y;
         let mut last_vel = p1.velocity;
-
-        p1.move_it();
+                
+        p1.update();
         assert!(p1.velocity == last_vel);
         assert!(p1.y == last_y);
 
         p1.direction = PaddleDirection::DOWN;
-        p1.move_it();
+        p1.update();
         assert!(p1.velocity > last_vel);
+        assert!(p1.velocity <= MAX_VELOCITY);
         assert!(p1.y > last_y);
 
         last_y = p1.y;
         last_vel = p1.velocity;
 
-        p1.move_it();
+        p1.update();
         assert!(p1.velocity > last_vel);
         assert!(p1.y > last_y);
+
+        for _n in 1..1000 {
+            p1.update();
+        }
+
+        // Make sure we don't exceed the maximum velocity and that we are bound by the bottom of the box
+        assert!(p1.velocity == MAX_VELOCITY);
+        assert!(p1.y == p1.max_y - p1.height);
 
         last_y = p1.y;
         last_vel = p1.velocity;
 
         p1.direction = PaddleDirection::NONE;
 
-        p1.move_it();
-        assert!(p1.velocity == last_vel);
+        p1.update();
+        // Velocity gets reset to default but location doesn't change
+        assert!(p1.velocity == DEFAULT_VELOCITY);
         assert!(p1.y == last_y);
 
         p1.direction = PaddleDirection::UP;
 
-        p1.move_it();
+        p1.update();
         assert!(p1.velocity < last_vel);
         assert!(p1.y < last_y);
 
         last_y = p1.y;
 
-        p1.move_it();
+        p1.update();
         assert!(p1.velocity > 5f32);
         assert!(p1.y < last_y);
+
+        for _n in 1..1000 {
+            p1.update();
+        }
+
+        // Make sure we don't exceed the maximum velocity and that we are bound by the top of the box
+        assert!(p1.velocity == MAX_VELOCITY);
+        assert!(p1.y == 0i32);
     }
 }
