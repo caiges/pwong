@@ -15,5 +15,5 @@ path = "src/main.rs"
 [dependencies]
 time = "*"
 num = "*"
-sdl2 = "0.30"
+sdl2 = "0.34.2"
 gl = "0.6.0"
