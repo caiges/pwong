@@ -86,10 +86,20 @@ impl Ball {
 		return normalized_intersect * MAXBOUNCEANGLE;
 	}
 
-	// Update the balls position and handle any collisions
+	// Update the ball's position and handle any collisions
 	pub fn update(&mut self, paddle1: &Paddle, paddle2: &Paddle, max_y: i32) {
 		self.x += self.vx * SPEED;
 		self.y += self.vy * SPEED;
+
+		// Prevent the ball from traveling past the court.
+		if self.y - self.r < 0 {
+			self.y = self.r;
+		}
+
+		if self.y + self.r > max_y {
+			self.y = max_y - self.r;
+		}
+
 		self.bounding_box.update_position(self.x - self.r, self.y - self.r);
 
 		// If there is a collision, set new vectors
@@ -103,7 +113,10 @@ impl Ball {
 
 			self.vx = -(bounce_angle.cos() * SPEED as f32) as i32;
 			self.vy = -(bounce_angle.sin() * SPEED as f32) as i32;
-		} else if self.y - self.r <= 0 || self.y + self.r >= max_y {
+		}
+		
+		if self.bounding_box.y == 0 || self.bounding_box.y + self.bounding_box.height == max_y {
+			// Handle the court boundaries
 			self.vy = -self.vy;
 		}
 	}
@@ -168,4 +181,18 @@ mod tests {
 		// Down and to the right
 		assert!(ball.vx == 3 && ball.vy == 2);
 	}
+}
+
+#[test]
+fn test_update_outside_of_court() {
+	let paddle1 = Paddle::new(0, 40, 1000, 10, 100);
+	let paddle2 = Paddle::new(0, 1000, 1000, 10, 100);
+	let mut ball = Ball::new(12, 0, 2, -1, -10);
+
+	ball.update(&paddle1, &paddle2, 100);
+	assert!(ball.y == 2, "{}", ball.y);
+
+	ball.y = 100;
+	ball.update(&paddle1, &paddle2, 100);
+	assert!(ball.y == 98, "{}", ball.y);
 }
