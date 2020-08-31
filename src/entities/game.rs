@@ -1,17 +1,17 @@
-extern crate sdl2;
 extern crate gl;
+extern crate sdl2;
 
+use super::ball::Ball;
+use super::court::Court;
 use super::keymap::KeyPressMap;
 use super::paddle::{Paddle, PaddleDirection};
-use super::court::Court;
-use super::ball::Ball;
 
-use self::sdl2::EventPump;
-use self::sdl2::keyboard::Keycode;
 use self::sdl2::event::{Event, WindowEvent};
-use self::sdl2::video::{Window};
-use self::sdl2::render::Canvas;
+use self::sdl2::keyboard::Keycode;
 use self::sdl2::pixels::Color;
+use self::sdl2::render::Canvas;
+use self::sdl2::video::Window;
+use self::sdl2::EventPump;
 
 use std::thread;
 use std::time::Duration;
@@ -41,24 +41,27 @@ pub struct Game {
     keymap: KeyPressMap,
 }
 
-
 impl Game {
     pub fn new(width: i32, height: i32) -> Game {
         let court = Court::new(width, height);
         let paddle_y = height / 2 - PADDLE_HEIGHT / 2;
         let p1 = Paddle::new(0, paddle_y, height, PADDLE_WIDTH, PADDLE_HEIGHT);
-        let p2 = Paddle::new(width - PADDLE_WIDTH,
-                             paddle_y,
-                             height,
-                             PADDLE_WIDTH,
-                             PADDLE_HEIGHT);
+        let p2 = Paddle::new(
+            width - PADDLE_WIDTH,
+            paddle_y,
+            height,
+            PADDLE_WIDTH,
+            PADDLE_HEIGHT,
+        );
         let ball_x = width / 2 - BALL_RADIUS / 2;
         let ball_y = height / 2 - BALL_RADIUS / 2;
-        let ball = Ball::new(ball_x,
-                             ball_y,
-                             BALL_RADIUS,
-                             INITIAL_BALL_VX,
-                             INITIAL_BALL_VY);
+        let ball = Ball::new(
+            ball_x,
+            ball_y,
+            BALL_RADIUS,
+            INITIAL_BALL_VX,
+            INITIAL_BALL_VY,
+        );
 
         Game {
             running: true,
@@ -90,7 +93,7 @@ impl Game {
         gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
         match canvas.window().gl_set_context_to_current() {
             Err(why) => panic!("{:?}", why),
-            Ok(_) => {},
+            Ok(_) => {}
         }
 
         let mut event_pump = sdl_context.event_pump().unwrap();
@@ -128,15 +131,25 @@ impl Game {
     pub fn capture_events(&mut self, event_pump: &mut EventPump) {
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. } |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => self.quit(),
-                Event::KeyDown { keycode: Some(Keycode::Space), .. } => self.pause(),
-                Event::KeyDown { keycode: Some(Keycode::R), .. } => self.reset(),
+                Event::Quit { .. }
+                | Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => self.quit(),
+                Event::KeyDown {
+                    keycode: Some(Keycode::Space),
+                    ..
+                } => self.pause(),
+                Event::KeyDown {
+                    keycode: Some(Keycode::R),
+                    ..
+                } => self.reset(),
                 Event::KeyDown { keycode, .. } => self.keymap.press(keycode.unwrap()),
                 Event::KeyUp { keycode, .. } => self.keymap.release(keycode.unwrap()),
-                Event::Window { win_event: WindowEvent::Resized(data1, data2), .. } => {
-                    self.handle_resize(data1, data2)
-                }
+                Event::Window {
+                    win_event: WindowEvent::Resized(data1, data2),
+                    ..
+                } => self.handle_resize(data1, data2),
                 _ => {}
             }
         }
@@ -144,7 +157,6 @@ impl Game {
 
     pub fn move_objects(&mut self) {
         if !self.paused {
-
             match self.keymap.last_pressed(&[Keycode::A, Keycode::Z]) {
                 Some(key) => {
                     match key {
@@ -186,13 +198,13 @@ impl Game {
         for player in self.players.iter_mut() {
             match canvas.draw_rect(player.get_rect()) {
                 Err(why) => panic!("{:?}", why),
-                Ok(_) => {},
+                Ok(_) => {}
             }
         }
         let points = self.ball.get_points();
         match canvas.draw_points(&points[..]) {
             Err(why) => panic!("{:?}", why),
-            Ok(_) => {},
+            Ok(_) => {}
         }
         canvas.present();
     }

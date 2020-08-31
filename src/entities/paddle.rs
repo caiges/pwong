@@ -4,7 +4,6 @@ use entities::bounds::BoundingBox;
 
 use self::sdl2::rect::Rect;
 
-
 static DEFAULT_VELOCITY: f32 = 5f32;
 static MAX_VELOCITY: f32 = 25f32;
 static MULTIPLIER_UP: f32 = -1f32;
@@ -97,7 +96,6 @@ mod tests {
 
         let mut last_y = p1.y;
         let mut last_vel = p1.velocity;
-                
         p1.update();
         assert!(p1.velocity == last_vel);
         assert!(p1.y == last_y);

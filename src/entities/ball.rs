@@ -1,6 +1,6 @@
 extern crate sdl2;
 
-use std::f32::{consts};
+use std::f32::consts;
 
 use entities::bounds::BoundingBox;
 use entities::paddle::Paddle;
@@ -16,53 +16,53 @@ pub struct Ball {
 	pub r: i32,
 	pub vx: i32,
 	pub vy: i32,
-	pub bounding_box: BoundingBox
+	pub bounding_box: BoundingBox,
 }
 
 impl Ball {
 	pub fn new(x: i32, y: i32, r: i32, vx: i32, vy: i32) -> Ball {
-		Ball{
+		Ball {
 			x: x,
 			y: y,
 			r: r,
 			vx: vx,
 			vy: vy,
-			bounding_box: BoundingBox::new(x - r, y - r, r * 2, r * 2)
+			bounding_box: BoundingBox::new(x - r, y - r, r * 2, r * 2),
 		}
 	}
 
-    pub fn get_points(&mut self) -> Vec<Point> {
-        let mut points = Vec::new();
-        let mut f = 1 - self.r;
-        let mut ddf_x = 1;
-        let mut ddf_y = -2 * self.r;
-        let mut x = 0;
-        let mut y = self.r;
-        points.push(Point::new(self.x, self.y + self.r));
-        points.push(Point::new(self.x, self.y - self.r));
-        points.push(Point::new(self.x + self.r, self.y));
-        points.push(Point::new(self.x - self.r, self.y));
+	pub fn get_points(&mut self) -> Vec<Point> {
+		let mut points = Vec::new();
+		let mut f = 1 - self.r;
+		let mut ddf_x = 1;
+		let mut ddf_y = -2 * self.r;
+		let mut x = 0;
+		let mut y = self.r;
+		points.push(Point::new(self.x, self.y + self.r));
+		points.push(Point::new(self.x, self.y - self.r));
+		points.push(Point::new(self.x + self.r, self.y));
+		points.push(Point::new(self.x - self.r, self.y));
 
-        while x < y {
-            if f >= 0 {
-                y -= 1;
-                ddf_y += 2;
-                f += ddf_y;
-            }
-            x += 1;
-            ddf_x += 2;
-            f += ddf_x;
-            points.push(Point::new(self.x + x, self.y + y));
-            points.push(Point::new(self.x - x, self.y + y));
-            points.push(Point::new(self.x + x, self.y - y));
-            points.push(Point::new(self.x - x, self.y - y));
-            points.push(Point::new(self.x + y, self.y + x));
-            points.push(Point::new(self.x - y, self.y + x));
-            points.push(Point::new(self.x + y, self.y - x));
-            points.push(Point::new(self.x - y, self.y - x));
-        }
-        return points;
-    }
+		while x < y {
+			if f >= 0 {
+				y -= 1;
+				ddf_y += 2;
+				f += ddf_y;
+			}
+			x += 1;
+			ddf_x += 2;
+			f += ddf_x;
+			points.push(Point::new(self.x + x, self.y + y));
+			points.push(Point::new(self.x - x, self.y + y));
+			points.push(Point::new(self.x + x, self.y - y));
+			points.push(Point::new(self.x - x, self.y - y));
+			points.push(Point::new(self.x + y, self.y + x));
+			points.push(Point::new(self.x - y, self.y + x));
+			points.push(Point::new(self.x + y, self.y - x));
+			points.push(Point::new(self.x - y, self.y - x));
+		}
+		return points;
+	}
 
 	// Determine the y value of intersection and return it
 	pub fn intersection(&self, paddle: &Paddle) -> i32 {
@@ -81,7 +81,8 @@ impl Ball {
 	pub fn bounce_angle(&self, paddle: &Paddle) -> f32 {
 		let intersection_y = self.intersection(&paddle);
 		let relative_intersect = (paddle.y + (paddle.height / 2)) - intersection_y;
-		let normalized_intersect = (relative_intersect as f32 / (paddle.height as f32 / 2 as f32)) as f32;
+		let normalized_intersect =
+			(relative_intersect as f32 / (paddle.height as f32 / 2 as f32)) as f32;
 
 		return normalized_intersect * MAXBOUNCEANGLE;
 	}
@@ -100,7 +101,9 @@ impl Ball {
 			self.y = max_y - self.r;
 		}
 
-		self.bounding_box.update_position(self.x - self.r, self.y - self.r);
+		self
+			.bounding_box
+			.update_position(self.x - self.r, self.y - self.r);
 
 		// If there is a collision, set new vectors
 		if self.bounding_box.collides_with(&paddle1.bounding_box) {
@@ -114,7 +117,6 @@ impl Ball {
 			self.vx = -(bounce_angle.cos() * SPEED as f32) as i32;
 			self.vy = -(bounce_angle.sin() * SPEED as f32) as i32;
 		}
-		
 		if self.bounding_box.y == 0 || self.bounding_box.y + self.bounding_box.height == max_y {
 			// Handle the court boundaries
 			self.vy = -self.vy;
@@ -124,8 +126,8 @@ impl Ball {
 
 #[cfg(test)]
 mod tests {
+	use super::super::paddle::Paddle;
 	use super::*;
-	use super::super::paddle::{Paddle};
 
 	#[test]
 	fn test_intersection() {
