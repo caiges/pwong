@@ -6,12 +6,16 @@ use super::court::Court;
 use super::keymap::KeyPressMap;
 use super::paddle::{Paddle, PaddleDirection};
 
+use self::sdl2::EventPump;
 use self::sdl2::event::{Event, WindowEvent};
 use self::sdl2::keyboard::Keycode;
 use self::sdl2::pixels::Color;
+use self::sdl2::rect::Rect;
 use self::sdl2::render::Canvas;
-use self::sdl2::video::Window;
-use self::sdl2::EventPump;
+use self::sdl2::rwops::RWops;
+use self::sdl2::video::{Window};
+use self::sdl2::render::TextureQuery;
+
 
 use std::thread;
 use std::time::Duration;
@@ -101,9 +105,9 @@ impl Game {
         while self.running {
             self.capture_events(&mut event_pump);
             self.move_objects();
+            self.check_for_score();
             self.wipe(&mut canvas);
             self.draw(&mut canvas);
-            self.check_for_score();
             thread::sleep(Duration::from_millis(17));
         }
     }
@@ -194,7 +198,11 @@ impl Game {
     }
 
     pub fn draw(&mut self, canvas: &mut Canvas<Window>) {
-        canvas.set_draw_color(Color::RGB(255, 157, 0));
+        let color = Color::RGB(255, 157, 0);
+        let font_size = 36;
+        let margin = 20i32;
+
+        canvas.set_draw_color(color);
         for player in self.players.iter_mut() {
             match canvas.draw_rect(player.get_rect()) {
                 Err(why) => panic!("{:?}", why),
@@ -206,6 +214,29 @@ impl Game {
             Err(why) => panic!("{:?}", why),
             Ok(_) => {}
         }
+
+        let texture_creator = canvas.texture_creator();
+
+        let ttf_bytes = include_bytes!("../OpenSans-Regular.ttf");
+        let ttf_rwops = RWops::from_bytes(ttf_bytes).unwrap();
+
+        let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string()).unwrap();
+        let sdl_font = ttf_context.load_font_from_rwops(ttf_rwops, font_size).unwrap();
+
+        for (i, score) in self.score.iter().enumerate() {
+            let surface = sdl_font.render(&score.to_string())
+                .blended(color).map_err(|e| e.to_string()).unwrap();
+            let texture = texture_creator.create_texture_from_surface(&surface)
+                .map_err(|e| e.to_string()).unwrap();
+
+            let TextureQuery { width, height, .. } = texture.query();
+
+            let x = if i == 0 { margin } else { self.court.width - width as i32 - margin };
+            let score_box = Rect::new(x, margin, width, height);
+    
+            canvas.copy(&texture, None, Some(score_box)).unwrap();
+        }
+
         canvas.present();
     }
 

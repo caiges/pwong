@@ -15,5 +15,9 @@ path = "src/main.rs"
 [dependencies]
 time = "*"
 num = "*"
-sdl2 = "0.34.2"
 gl = "0.6.0"
+
+[dependencies.sdl2]
+version = "0.34.2"
+default-features = false
+features = ["ttf"]
