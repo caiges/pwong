@@ -7,12 +7,14 @@ use self::sdl2::keyboard::Keycode;
 static KEY_COUNT: usize = 235;
 
 pub struct KeyPressMap {
-    pub pressed: [u64; 235]
+    pub pressed: [u64; 235],
 }
 
 impl KeyPressMap {
     pub fn new() -> KeyPressMap {
-        KeyPressMap{pressed: [0u64; 235]}
+        KeyPressMap {
+            pressed: [0u64; 235],
+        }
     }
 
     fn key_to_index(&mut self, key: Keycode) -> usize {
@@ -59,8 +61,8 @@ impl KeyPressMap {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::sdl2::keyboard::Keycode;
+    use super::*;
 
     #[test]
     fn test_key_mapping() {
@@ -70,7 +72,7 @@ mod tests {
         assert!(map.is_pressed(Keycode::B) == false);
         match map.last_pressed(&[Keycode::A, Keycode::B]) {
             Some(key) => assert!(key == Keycode::A),
-            None => assert!(false)
+            None => assert!(false),
         }
 
         map.press(Keycode::B);
@@ -78,7 +80,7 @@ mod tests {
         assert!(map.is_pressed(Keycode::B) == true);
         match map.last_pressed(&[Keycode::A, Keycode::B]) {
             Some(key) => assert!(key == Keycode::B),
-            None => assert!(false)
+            None => assert!(false),
         }
 
         map.release(Keycode::A);
@@ -86,7 +88,7 @@ mod tests {
         assert!(map.is_pressed(Keycode::B) == true);
         match map.last_pressed(&[Keycode::A, Keycode::B]) {
             Some(key) => assert!(key == Keycode::B),
-            None => assert!(false)
+            None => assert!(false),
         }
     }
 }

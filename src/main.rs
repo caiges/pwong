@@ -1,5 +1,5 @@
-extern crate sdl2;
 extern crate pwong;
+extern crate sdl2;
 
 use pwong::entities::game::Game;
 
