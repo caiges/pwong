@@ -182,3 +182,17 @@ mod tests {
 		assert!(ball.vx == 3 && ball.vy == 2);
 	}
 }
+
+#[test]
+fn test_update_outside_of_court() {
+	let paddle1 = Paddle::new(0, 40, 1000, 10, 100);
+	let paddle2 = Paddle::new(0, 1000, 1000, 10, 100);
+	let mut ball = Ball::new(12, 0, 2, -1, -10);
+
+	ball.update(&paddle1, &paddle2, 100);
+	assert!(ball.y == 2, "{}", ball.y);
+
+	ball.y = 100;
+	ball.update(&paddle1, &paddle2, 100);
+	assert!(ball.y == 98, "{}", ball.y);
+}
