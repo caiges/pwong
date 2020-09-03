@@ -1,3 +1,4 @@
+extern crate libc;
 extern crate sdl2;
 
 use std::f32::consts;
@@ -87,8 +88,32 @@ impl Ball {
 		return normalized_intersect * MAXBOUNCEANGLE;
 	}
 
+	// Create a collision event.
+	pub fn collision_event(
+		&mut self,
+		event_subsystem: self::sdl2::EventSubsystem,
+	) -> self::sdl2::event::Event {
+		let custom_event_type_id = unsafe { event_subsystem.register_event().unwrap() };
+		let event = sdl2::event::Event::User {
+			timestamp: 0,
+			window_id: 0,
+			type_: custom_event_type_id,
+			code: 456,
+			data1: 0x1234 as *mut libc::c_void,
+			data2: 0x5678 as *mut libc::c_void,
+		};
+
+		return event;
+	}
+
 	// Update the ball's position and handle any collisions
-	pub fn update(&mut self, paddle1: &Paddle, paddle2: &Paddle, max_y: i32) {
+	pub fn update(
+		&mut self,
+		event_subsystem: self::sdl2::EventSubsystem,
+		paddle1: &Paddle,
+		paddle2: &Paddle,
+		max_y: i32,
+	) {
 		self.x += self.vx * SPEED;
 		self.y += self.vy * SPEED;
 
@@ -111,15 +136,27 @@ impl Ball {
 
 			self.vx = (bounce_angle.cos() * SPEED as f32) as i32;
 			self.vy = -(bounce_angle.sin() * SPEED as f32) as i32;
+
+			// Dispatch collection sound event.
+			let e = self.collision_event(event_subsystem.clone());
+			event_subsystem.push_event(e);
 		} else if self.bounding_box.collides_with(&paddle2.bounding_box) {
 			let bounce_angle = self.bounce_angle(&paddle2);
 
 			self.vx = -(bounce_angle.cos() * SPEED as f32) as i32;
 			self.vy = -(bounce_angle.sin() * SPEED as f32) as i32;
+
+			// Dispatch collection sound event.
+			let e = self.collision_event(event_subsystem.clone());
+			event_subsystem.push_event(e);
 		}
 		if self.bounding_box.y == 0 || self.bounding_box.y + self.bounding_box.height == max_y {
 			// Handle the court boundaries
 			self.vy = -self.vy;
+
+			// Dispatch collection sound event.
+			let e = self.collision_event(event_subsystem.clone());
+			event_subsystem.push_event(e);
 		}
 	}
 }

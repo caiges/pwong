@@ -39,10 +39,17 @@ pub struct Game {
     players: [Paddle; 2],
     ball: Ball,
     keymap: KeyPressMap,
+    sdl_context: self::sdl2::Sdl,
+    event_subsystem: self::sdl2::EventSubsystem,
+    video_subsystem: self::sdl2::VideoSubsystem,
 }
 
 impl Game {
     pub fn new(width: i32, height: i32) -> Game {
+        let sdl_context = sdl2::init().unwrap();
+        let event_subsystem = sdl_context.event().unwrap();
+        let video_subsystem = sdl_context.video().unwrap();
+
         let court = Court::new(width, height);
         let paddle_y = height / 2 - PADDLE_HEIGHT / 2;
         let p1 = Paddle::new(0, paddle_y, height, PADDLE_WIDTH, PADDLE_HEIGHT);
@@ -71,13 +78,15 @@ impl Game {
             players: [p1, p2],
             ball: ball,
             keymap: KeyPressMap::new(),
+            sdl_context: sdl_context,
+            event_subsystem: event_subsystem,
+            video_subsystem: video_subsystem,
         }
     }
 
     pub fn run(&mut self) {
-        let sdl_context = sdl2::init().unwrap();
-        let video_subsystem = sdl_context.video().unwrap();
-        let window = video_subsystem
+        let window = self
+            .video_subsystem
             .window("Window", self.court.width as u32, self.court.height as u32)
             .opengl()
             .position_centered()
@@ -90,17 +99,17 @@ impl Game {
             .build()
             .unwrap();
 
-        gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
+        gl::load_with(|name| self.video_subsystem.gl_get_proc_address(name) as *const _);
         match canvas.window().gl_set_context_to_current() {
             Err(why) => panic!("{:?}", why),
             Ok(_) => {}
         }
 
-        let mut event_pump = sdl_context.event_pump().unwrap();
+        let mut event_pump = self.sdl_context.event_pump().unwrap();
 
         while self.running {
             self.capture_events(&mut event_pump);
-            self.move_objects();
+            self.update();
             self.wipe(&mut canvas);
             self.draw(&mut canvas);
             self.check_for_score();
@@ -150,12 +159,13 @@ impl Game {
                     win_event: WindowEvent::Resized(data1, data2),
                     ..
                 } => self.handle_resize(data1, data2),
+                Event::User { code: 456, .. } => println!("collision"),
                 _ => {}
             }
         }
     }
 
-    pub fn move_objects(&mut self) {
+    pub fn update(&mut self) {
         if !self.paused {
             match self.keymap.last_pressed(&[Keycode::A, Keycode::Z]) {
                 Some(key) => {
@@ -183,8 +193,12 @@ impl Game {
                 player.update()
             }
 
-            self.ball
-                .update(&self.players[0], &self.players[1], self.court.height);
+            self.ball.update(
+                self.event_subsystem.clone(),
+                &self.players[0],
+                &self.players[1],
+                self.court.height,
+            );
         }
     }
 
