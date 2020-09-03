@@ -5,9 +5,11 @@ use super::ball::Ball;
 use super::court::Court;
 use super::keymap::KeyPressMap;
 use super::paddle::{Paddle, PaddleDirection};
+use crate::audio;
 
 use self::sdl2::event::{Event, WindowEvent};
 use self::sdl2::keyboard::Keycode;
+use self::sdl2::mixer;
 use self::sdl2::pixels::Color;
 use self::sdl2::render::Canvas;
 use self::sdl2::video::Window;
@@ -39,7 +41,9 @@ pub struct Game {
     players: [Paddle; 2],
     ball: Ball,
     keymap: KeyPressMap,
+    audio_player: audio::player::Player,
     sdl_context: self::sdl2::Sdl,
+    audio_subsystem: self::sdl2::AudioSubsystem,
     event_subsystem: self::sdl2::EventSubsystem,
     video_subsystem: self::sdl2::VideoSubsystem,
 }
@@ -47,9 +51,24 @@ pub struct Game {
 impl Game {
     pub fn new(width: i32, height: i32) -> Game {
         let sdl_context = sdl2::init().unwrap();
+        // SDL sub-systems.
+        let audio_subsystem = sdl_context.audio().unwrap();
         let event_subsystem = sdl_context.event().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
+        // Open mixer.
+        mixer::open_audio(
+            44_100,
+            mixer::DEFAULT_FORMAT,
+            mixer::DEFAULT_CHANNELS,
+            1_024,
+        );
+
+        // Our own systems.
+        let pack = "farm_animals";
+        let audio_player = audio::player::Player::new(pack.to_string());
+
+        // Game entities.
         let court = Court::new(width, height);
         let paddle_y = height / 2 - PADDLE_HEIGHT / 2;
         let p1 = Paddle::new(0, paddle_y, height, PADDLE_WIDTH, PADDLE_HEIGHT);
@@ -78,7 +97,9 @@ impl Game {
             players: [p1, p2],
             ball: ball,
             keymap: KeyPressMap::new(),
+            audio_player: audio_player,
             sdl_context: sdl_context,
+            audio_subsystem: audio_subsystem,
             event_subsystem: event_subsystem,
             video_subsystem: video_subsystem,
         }
@@ -112,6 +133,7 @@ impl Game {
             self.update();
             self.wipe(&mut canvas);
             self.draw(&mut canvas);
+            self.audio();
             self.check_for_score();
             thread::sleep(Duration::from_millis(17));
         }
@@ -159,7 +181,9 @@ impl Game {
                     win_event: WindowEvent::Resized(data1, data2),
                     ..
                 } => self.handle_resize(data1, data2),
-                Event::User { code: 456, .. } => println!("collision"),
+                Event::User { code: 456, .. } => {
+                    self.audio_player.add("ball_collision".to_string())
+                }
                 _ => {}
             }
         }
@@ -221,6 +245,10 @@ impl Game {
             Ok(_) => {}
         }
         canvas.present();
+    }
+
+    pub fn audio(&mut self) {
+        self.audio_player.play();
     }
 
     // In lieu of a more structured player type and event system, monitor the x coordinate of the ball, score for the appropriate player
