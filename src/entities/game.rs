@@ -15,6 +15,7 @@ use self::sdl2::render::Canvas;
 use self::sdl2::video::Window;
 use self::sdl2::EventPump;
 
+use std::env;
 use std::thread;
 use std::time::Duration;
 
@@ -65,8 +66,11 @@ impl Game {
         );
 
         // Our own systems.
-        let pack = "farm_animals";
-        let audio_player = audio::player::Player::new(pack.to_string());
+        let pack = match env::var("PWONG_ASSET_PACK") {
+            Ok(p) => p,
+            Err(_) => "farm_animals".to_string(),
+        };
+        let audio_player = audio::player::Player::new(pack);
 
         // Game entities.
         let court = Court::new(width, height);
