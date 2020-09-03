@@ -15,19 +15,35 @@ impl Player {
     let mut catalog: HashMap<String, mixer::Chunk> = HashMap::new();
 
     // We should make loading dynamic.
-    let pack_path = format!("assets/{}/audio/ball/collision.ogg", pack);
-    let ball_collision_path = std::path::Path::new(pack_path.as_str());
-    let ball_collision_chunk = match mixer::Chunk::from_file(ball_collision_path) {
-      Ok(a) => a,
-      Err(e) => panic!("{:?}", e),
-    };
+    let pack_path = format!("assets/{}", pack);
 
-    catalog.insert("ball_collision".to_string(), ball_collision_chunk);
+    let audio_pack = [
+      "ball_collision",
+      "ball/collision.ogg",
+      "score",
+      "score/score.ogg",
+    ];
+
+    let mut i = 0;
+    while i < audio_pack.len() {
+      let chunk = match Player::load_audio_chunk(pack_path.clone(), audio_pack[i + 1].to_string()) {
+        Ok(c) => c,
+        Err(e) => panic!("{:?}", e),
+      };
+      catalog.insert(audio_pack[i].to_string(), chunk);
+      i += 2;
+    }
 
     return Player {
       playlist: Playlist::new(),
       catalog: catalog,
     };
+  }
+
+  pub fn load_audio_chunk(pack_path: String, asset: String) -> Result<mixer::Chunk, String> {
+    let path = format!("{}/audio/{}", pack_path, asset);
+    let chunk_path = std::path::Path::new(path.as_str());
+    mixer::Chunk::from_file(chunk_path)
   }
 
   pub fn add(&mut self, spec: String) {

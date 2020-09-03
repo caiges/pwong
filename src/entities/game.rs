@@ -259,8 +259,10 @@ impl Game {
     pub fn check_for_score(&mut self) {
         if self.ball.x - self.ball.r <= 0 {
             self.score(1);
+            self.audio_player.add("score".to_string());
         } else if self.ball.x + self.ball.r >= self.court.width {
             self.score(0);
+            self.audio_player.add("score".to_string());
         }
     }
 
