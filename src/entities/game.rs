@@ -44,7 +44,6 @@ pub struct Game {
     keymap: KeyPressMap,
     audio_player: audio::player::Player,
     sdl_context: self::sdl2::Sdl,
-    audio_subsystem: self::sdl2::AudioSubsystem,
     event_subsystem: self::sdl2::EventSubsystem,
     video_subsystem: self::sdl2::VideoSubsystem,
 }
@@ -53,7 +52,6 @@ impl Game {
     pub fn new(width: i32, height: i32) -> Game {
         let sdl_context = sdl2::init().unwrap();
         // SDL sub-systems.
-        let audio_subsystem = sdl_context.audio().unwrap();
         let event_subsystem = sdl_context.event().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
@@ -63,7 +61,8 @@ impl Game {
             mixer::DEFAULT_FORMAT,
             mixer::DEFAULT_CHANNELS,
             1_024,
-        );
+        )
+        .unwrap();
 
         // Our own systems.
         let pack = match env::var("PWONG_ASSET_PACK") {
@@ -103,7 +102,6 @@ impl Game {
             keymap: KeyPressMap::new(),
             audio_player: audio_player,
             sdl_context: sdl_context,
-            audio_subsystem: audio_subsystem,
             event_subsystem: event_subsystem,
             video_subsystem: video_subsystem,
         }
@@ -252,7 +250,7 @@ impl Game {
     }
 
     pub fn audio(&mut self) {
-        self.audio_player.play();
+        self.audio_player.play().unwrap();
     }
 
     // In lieu of a more structured player type and event system, monitor the x coordinate of the ball, score for the appropriate player

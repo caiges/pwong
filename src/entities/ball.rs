@@ -139,7 +139,7 @@ impl Ball {
 
 			// Dispatch collection sound event.
 			let e = self.collision_event(event_subsystem.clone());
-			event_subsystem.push_event(e);
+			event_subsystem.push_event(e).unwrap();
 		} else if self.bounding_box.collides_with(&paddle2.bounding_box) {
 			let bounce_angle = self.bounce_angle(&paddle2);
 
@@ -148,7 +148,7 @@ impl Ball {
 
 			// Dispatch collection sound event.
 			let e = self.collision_event(event_subsystem.clone());
-			event_subsystem.push_event(e);
+			event_subsystem.push_event(e).unwrap();
 		}
 		if self.bounding_box.y == 0 || self.bounding_box.y + self.bounding_box.height == max_y {
 			// Handle the court boundaries
@@ -156,7 +156,7 @@ impl Ball {
 
 			// Dispatch collection sound event.
 			let e = self.collision_event(event_subsystem.clone());
-			event_subsystem.push_event(e);
+			event_subsystem.push_event(e).unwrap();
 		}
 	}
 }
