@@ -34,7 +34,7 @@ fn find_sdl_gl_driver() -> Option<u32> {
     None
 }
 
-pub struct Game {
+pub struct Game<'a> {
     running: bool,
     paused: bool,
     score: [i32; 2],
@@ -42,14 +42,14 @@ pub struct Game {
     players: [Paddle; 2],
     ball: Ball,
     keymap: KeyPressMap,
-    audio_player: audio::player::Player,
+    audio_player: audio::player::Player<'a>,
     sdl_context: self::sdl2::Sdl,
     event_subsystem: self::sdl2::EventSubsystem,
     video_subsystem: self::sdl2::VideoSubsystem,
 }
 
-impl Game {
-    pub fn new(width: i32, height: i32) -> Game {
+impl<'a> Game<'a> {
+    pub fn new(width: i32, height: i32) -> Game<'a> {
         let sdl_context = sdl2::init().unwrap();
         // SDL sub-systems.
         let event_subsystem = sdl_context.event().unwrap();
@@ -65,10 +65,7 @@ impl Game {
         .unwrap();
 
         // Our own systems.
-        let pack = match env::var("PWONG_ASSET_PACK") {
-            Ok(p) => p,
-            Err(_) => "farm_animals".to_string(),
-        };
+        let pack = env::var("PWONG_ASSET_PACK").unwrap_or("caige".to_string());
         let audio_player = audio::player::Player::new(pack);
 
         // Game entities.
@@ -90,6 +87,7 @@ impl Game {
             BALL_RADIUS,
             INITIAL_BALL_VX,
             INITIAL_BALL_VY,
+            event_subsystem.clone(),
         );
 
         Game {
@@ -102,7 +100,7 @@ impl Game {
             keymap: KeyPressMap::new(),
             audio_player: audio_player,
             sdl_context: sdl_context,
-            event_subsystem: event_subsystem,
+            event_subsystem: event_subsystem.clone(),
             video_subsystem: video_subsystem,
         }
     }
@@ -219,12 +217,8 @@ impl Game {
                 player.update()
             }
 
-            self.ball.update(
-                self.event_subsystem.clone(),
-                &self.players[0],
-                &self.players[1],
-                self.court.height,
-            );
+            self.ball
+                .update(&self.players[0], &self.players[1], self.court.height);
         }
     }
 
@@ -251,6 +245,13 @@ impl Game {
 
     pub fn audio(&mut self) {
         self.audio_player.play().unwrap();
+        if !self.paused {
+            self.audio_player
+                .play_music("orchestra".to_string(), self.paused)
+                .unwrap();
+        } else {
+            self.audio_player.pause_music();
+        }
     }
 
     // In lieu of a more structured player type and event system, monitor the x coordinate of the ball, score for the appropriate player
@@ -283,6 +284,7 @@ impl Game {
     pub fn restart(&mut self) {
         self.reset_entities();
         self.paused = true;
+        self.audio_player.rewind_music();
     }
 
     pub fn reset(&mut self) {

@@ -5,18 +5,21 @@ use self::sdl2::mixer;
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
-pub struct Player {
+pub struct Player<'a> {
+  music_catalog: HashMap<String, sdl2::mixer::Music<'a>>,
+  current_music: Option<String>,
   playlist: Playlist,
   catalog: HashMap<String, mixer::Chunk>,
 }
 
-impl Player {
-  pub fn new(pack: String) -> Player {
+impl<'a> Player<'a> {
+  pub fn new(pack: String) -> Player<'a> {
     let mut catalog: HashMap<String, mixer::Chunk> = HashMap::new();
-
+    let mut music_catalog: HashMap<String, mixer::Music> = HashMap::new();
     // We should make loading dynamic.
     let pack_path = format!("assets/{}", pack);
 
+    // Load sound effects.
     let audio_pack = [
       "ball_collision",
       "ball/collision.ogg",
@@ -34,9 +37,28 @@ impl Player {
       i += 2;
     }
 
+    // Load music.
+    let music_pack = ["orchestra", "background/orchestra.ogg"];
+
+    let mut i = 0;
+    while i < music_pack.len() {
+      let music_path = format!("{}/audio/{}", pack_path, music_pack[i + 1]);
+
+      let m = match self::sdl2::mixer::Music::from_file(music_path) {
+        Ok(c) => c,
+        Err(e) => panic!("{:?}", e),
+      };
+      music_catalog.insert(music_pack[i].to_string(), m);
+      i += 2;
+    }
+
+    println!("{:?}", music_catalog);
+
     return Player {
       playlist: Playlist::new(),
       catalog: catalog,
+      music_catalog: music_catalog,
+      current_music: None,
     };
   }
 
@@ -59,6 +81,39 @@ impl Player {
     }
 
     Ok(())
+  }
+
+  // Play music item.
+  pub fn play_music(&mut self, item: String, paused: bool) -> Result<(), String> {
+    let m = self.music_catalog.get(&item).unwrap();
+
+    match &self.current_music {
+      Some(cm) => {
+        if *cm != *item {
+          m.play(-1)?;
+        }
+
+        if !paused && *cm == *item {
+          sdl2::mixer::Music::resume();
+        }
+      }
+      None => {
+        self.current_music = Some(item);
+        m.play(-1)?;
+      }
+    }
+
+    Ok(())
+  }
+
+  // Pause music.
+  pub fn pause_music(&mut self) {
+    sdl2::mixer::Music::pause();
+  }
+
+  // Rewind music.
+  pub fn rewind_music(&mut self) {
+    sdl2::mixer::Music::rewind();
   }
 }
 
