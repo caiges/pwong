@@ -86,18 +86,20 @@ impl<'a> Player<'a> {
   // Play music item.
   pub fn play_music(&mut self, item: String, paused: bool) -> Result<(), String> {
     let m = self.music_catalog.get(&item).unwrap();
-
     match &self.current_music {
       Some(cm) => {
+        // If we already have music playing, o\nly play the requested music if it's not already active.
         if *cm != *item {
           m.play(-1)?;
         }
 
+        // Resume playing if the game is not paused and the requested music was already active.
         if !paused && *cm == *item {
           sdl2::mixer::Music::resume();
         }
       }
       None => {
+        // If no music is active, make the requested music active and play it.
         self.current_music = Some(item);
         m.play(-1)?;
       }
