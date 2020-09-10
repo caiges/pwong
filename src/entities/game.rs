@@ -44,7 +44,6 @@ pub struct Game<'a> {
     keymap: KeyPressMap,
     audio_player: audio::player::Player<'a>,
     sdl_context: self::sdl2::Sdl,
-    event_subsystem: self::sdl2::EventSubsystem,
     video_subsystem: self::sdl2::VideoSubsystem,
 }
 
@@ -100,7 +99,6 @@ impl<'a> Game<'a> {
             keymap: KeyPressMap::new(),
             audio_player: audio_player,
             sdl_context: sdl_context,
-            event_subsystem: event_subsystem.clone(),
             video_subsystem: video_subsystem,
         }
     }
