@@ -1,3 +1,4 @@
+extern crate libc;
 extern crate sdl2;
 
 use std::f32::consts;
@@ -17,10 +18,11 @@ pub struct Ball {
 	pub vx: i32,
 	pub vy: i32,
 	pub bounding_box: BoundingBox,
+	event_subsystem: self::sdl2::EventSubsystem,
 }
 
 impl Ball {
-	pub fn new(x: i32, y: i32, r: i32, vx: i32, vy: i32) -> Ball {
+	pub fn new(x: i32, y: i32, r: i32, vx: i32, vy: i32, es: self::sdl2::EventSubsystem) -> Ball {
 		Ball {
 			x: x,
 			y: y,
@@ -28,6 +30,7 @@ impl Ball {
 			vx: vx,
 			vy: vy,
 			bounding_box: BoundingBox::new(x - r, y - r, r * 2, r * 2),
+			event_subsystem: es,
 		}
 	}
 
@@ -87,6 +90,21 @@ impl Ball {
 		return normalized_intersect * MAXBOUNCEANGLE;
 	}
 
+	// Create a collision event.
+	pub fn collision_event(&mut self) -> self::sdl2::event::Event {
+		let custom_event_type_id = unsafe { self.event_subsystem.register_event().unwrap() };
+		let event = sdl2::event::Event::User {
+			timestamp: 0,
+			window_id: 0,
+			type_: custom_event_type_id,
+			code: 456,
+			data1: 0x1234 as *mut libc::c_void,
+			data2: 0x5678 as *mut libc::c_void,
+		};
+
+		return event;
+	}
+
 	// Update the ball's position and handle any collisions
 	pub fn update(&mut self, paddle1: &Paddle, paddle2: &Paddle, max_y: i32) {
 		self.x += self.vx * SPEED;
@@ -111,15 +129,27 @@ impl Ball {
 
 			self.vx = (bounce_angle.cos() * SPEED as f32) as i32;
 			self.vy = -(bounce_angle.sin() * SPEED as f32) as i32;
+
+			// Dispatch collection sound event.
+			let e = self.collision_event();
+			self.event_subsystem.push_event(e).unwrap();
 		} else if self.bounding_box.collides_with(&paddle2.bounding_box) {
 			let bounce_angle = self.bounce_angle(&paddle2);
 
 			self.vx = -(bounce_angle.cos() * SPEED as f32) as i32;
 			self.vy = -(bounce_angle.sin() * SPEED as f32) as i32;
+
+			// Dispatch collection sound event.
+			let e = self.collision_event();
+			self.event_subsystem.push_event(e).unwrap();
 		}
 		if self.bounding_box.y == 0 || self.bounding_box.y + self.bounding_box.height == max_y {
 			// Handle the court boundaries
 			self.vy = -self.vy;
+
+			// Dispatch collection sound event.
+			let e = self.collision_event();
+			self.event_subsystem.push_event(e).unwrap();
 		}
 	}
 }
@@ -131,8 +161,9 @@ mod tests {
 
 	#[test]
 	fn test_intersection() {
+		let sdl_context = sdl2::init().unwrap();
 		let paddle = Paddle::new(0, 40, 1000, 10, 100);
-		let mut ball = Ball::new(10, 40, 10, 1, 1);
+		let mut ball = Ball::new(10, 40, 10, 1, 1, sdl_context.event().unwrap());
 
 		assert!(ball.intersection(&paddle) == paddle.y);
 
@@ -145,8 +176,9 @@ mod tests {
 
 	#[test]
 	fn test_bounce_angle() {
+		let sdl_context = sdl2::init().unwrap();
 		let paddle = Paddle::new(0, 40, 1000, 10, 100);
-		let ball = Ball::new(10, 50, 10, 1, 1);
+		let ball = Ball::new(10, 50, 10, 1, 1, sdl_context.event().unwrap());
 		let bounce_angle = ball.bounce_angle(&paddle);
 
 		// Remember boys and girls, directly comparing floats is not accurate.
@@ -156,9 +188,10 @@ mod tests {
 
 	#[test]
 	fn test_update() {
+		let sdl_context = sdl2::init().unwrap();
 		let paddle1 = Paddle::new(0, 40, 1000, 10, 100);
 		let paddle2 = Paddle::new(0, 1000, 1000, 10, 100);
-		let mut ball = Ball::new(12, 60, 15, -1, 0);
+		let mut ball = Ball::new(12, 60, 15, -1, 0, sdl_context.event().unwrap());
 
 		ball.update(&paddle1, &paddle2, 1000);
 
@@ -187,9 +220,10 @@ mod tests {
 
 #[test]
 fn test_update_outside_of_court() {
+	let sdl_context = sdl2::init().unwrap();
 	let paddle1 = Paddle::new(0, 40, 1000, 10, 100);
 	let paddle2 = Paddle::new(0, 1000, 1000, 10, 100);
-	let mut ball = Ball::new(12, 0, 2, -1, -10);
+	let mut ball = Ball::new(12, 0, 2, -1, -10, sdl_context.event().unwrap());
 
 	ball.update(&paddle1, &paddle2, 100);
 	assert!(ball.y == 2, "{}", ball.y);

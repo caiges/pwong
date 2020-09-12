@@ -5,10 +5,12 @@ use super::ball::Ball;
 use super::court::Court;
 use super::keymap::KeyPressMap;
 use super::paddle::{Paddle, PaddleDirection};
+use crate::audio;
 
 use self::sdl2::EventPump;
 use self::sdl2::event::{Event, WindowEvent};
 use self::sdl2::keyboard::Keycode;
+use self::sdl2::mixer;
 use self::sdl2::pixels::Color;
 use self::sdl2::rect::Rect;
 use self::sdl2::render::Canvas;
@@ -17,6 +19,7 @@ use self::sdl2::video::{Window};
 use self::sdl2::render::TextureQuery;
 
 
+use std::env;
 use std::thread;
 use std::time::Duration;
 
@@ -35,7 +38,7 @@ fn find_sdl_gl_driver() -> Option<u32> {
     None
 }
 
-pub struct Game {
+pub struct Game<'a> {
     running: bool,
     paused: bool,
     score: [i32; 2],
@@ -43,10 +46,32 @@ pub struct Game {
     players: [Paddle; 2],
     ball: Ball,
     keymap: KeyPressMap,
+    audio_player: audio::player::Player<'a>,
+    sdl_context: self::sdl2::Sdl,
+    video_subsystem: self::sdl2::VideoSubsystem,
 }
 
-impl Game {
-    pub fn new(width: i32, height: i32) -> Game {
+impl<'a> Game<'a> {
+    pub fn new(width: i32, height: i32) -> Game<'a> {
+        let sdl_context = sdl2::init().unwrap();
+        // SDL sub-systems.
+        let event_subsystem = sdl_context.event().unwrap();
+        let video_subsystem = sdl_context.video().unwrap();
+
+        // Open mixer.
+        mixer::open_audio(
+            44_100,
+            mixer::DEFAULT_FORMAT,
+            mixer::DEFAULT_CHANNELS,
+            1_024,
+        )
+        .unwrap();
+
+        // Our own systems.
+        let pack = env::var("PWONG_ASSET_PACK").unwrap_or("caige".to_string());
+        let audio_player = audio::player::Player::new(pack);
+
+        // Game entities.
         let court = Court::new(width, height);
         let paddle_y = height / 2 - PADDLE_HEIGHT / 2;
         let p1 = Paddle::new(0, paddle_y, height, PADDLE_WIDTH, PADDLE_HEIGHT);
@@ -65,6 +90,7 @@ impl Game {
             BALL_RADIUS,
             INITIAL_BALL_VX,
             INITIAL_BALL_VY,
+            event_subsystem.clone(),
         );
 
         Game {
@@ -75,13 +101,15 @@ impl Game {
             players: [p1, p2],
             ball: ball,
             keymap: KeyPressMap::new(),
+            audio_player: audio_player,
+            sdl_context: sdl_context,
+            video_subsystem: video_subsystem,
         }
     }
 
     pub fn run(&mut self) {
-        let sdl_context = sdl2::init().unwrap();
-        let video_subsystem = sdl_context.video().unwrap();
-        let window = video_subsystem
+        let window = self
+            .video_subsystem
             .window("Window", self.court.width as u32, self.court.height as u32)
             .opengl()
             .position_centered()
@@ -94,20 +122,22 @@ impl Game {
             .build()
             .unwrap();
 
-        gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
+        gl::load_with(|name| self.video_subsystem.gl_get_proc_address(name) as *const _);
         match canvas.window().gl_set_context_to_current() {
             Err(why) => panic!("{:?}", why),
             Ok(_) => {}
         }
 
-        let mut event_pump = sdl_context.event_pump().unwrap();
+        let mut event_pump = self.sdl_context.event_pump().unwrap();
 
         while self.running {
             self.capture_events(&mut event_pump);
-            self.move_objects();
+            self.update();
             self.check_for_score();
             self.wipe(&mut canvas);
             self.draw(&mut canvas);
+            self.audio();
+
             thread::sleep(Duration::from_millis(17));
         }
     }
@@ -154,12 +184,15 @@ impl Game {
                     win_event: WindowEvent::Resized(data1, data2),
                     ..
                 } => self.handle_resize(data1, data2),
+                Event::User { code: 456, .. } => {
+                    self.audio_player.add("ball_collision".to_string())
+                }
                 _ => {}
             }
         }
     }
 
-    pub fn move_objects(&mut self) {
+    pub fn update(&mut self) {
         if !self.paused {
             match self.keymap.last_pressed(&[Keycode::A, Keycode::Z]) {
                 Some(key) => {
@@ -240,12 +273,25 @@ impl Game {
         canvas.present();
     }
 
+    pub fn audio(&mut self) {
+        self.audio_player.play().unwrap();
+        if !self.paused {
+            self.audio_player
+                .play_music("orchestra".to_string(), self.paused)
+                .unwrap();
+        } else {
+            self.audio_player.pause_music();
+        }
+    }
+
     // In lieu of a more structured player type and event system, monitor the x coordinate of the ball, score for the appropriate player
     pub fn check_for_score(&mut self) {
         if self.ball.x - self.ball.r <= 0 {
             self.score(1);
+            self.audio_player.add("score".to_string());
         } else if self.ball.x + self.ball.r >= self.court.width {
             self.score(0);
+            self.audio_player.add("score".to_string());
         }
     }
 
@@ -268,6 +314,7 @@ impl Game {
     pub fn restart(&mut self) {
         self.reset_entities();
         self.paused = true;
+        self.audio_player.rewind_music();
     }
 
     pub fn reset(&mut self) {
