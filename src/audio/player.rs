@@ -20,21 +20,16 @@ impl<'a> Player<'a> {
     let pack_path = format!("assets/{}", pack);
 
     // Load sound effects.
-    let audio_pack = [
-      "ball_collision",
-      "ball/collision.ogg",
-      "score",
-      "score/score.ogg",
-    ];
+    let mut audio_pack = HashMap::new();
+    audio_pack.insert("ball_collision", "ball/collision.ogg");
+    audio_pack.insert("score", "score/score.ogg");
 
-    let mut i = 0;
-    while i < audio_pack.len() {
-      let chunk = match Player::load_audio_chunk(pack_path.clone(), audio_pack[i + 1].to_string()) {
+    for (name, path) in audio_pack.iter() {
+      let chunk = match Player::load_audio_chunk(pack_path.clone(), path.to_string()) {
         Ok(c) => c,
         Err(e) => panic!("{:?}", e),
       };
-      catalog.insert(audio_pack[i].to_string(), chunk);
-      i += 2;
+      catalog.insert(name.to_string(), chunk);
     }
 
     // Load music.
