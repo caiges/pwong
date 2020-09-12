@@ -21,4 +21,4 @@ libc = "0.2.76"
 [dependencies.sdl2]
 version = "0.34.2"
 default-features = false
-features = ["mixer"]
+features = ["mixer", "ttf"]
