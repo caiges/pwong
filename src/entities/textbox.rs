@@ -9,15 +9,15 @@ use self::sdl2::render::TextureQuery;
 use self::sdl2::video::Window;
 
 pub struct TextBox<'ttf, 'a> {
-    pub theme: Theme<'ttf, 'a>,
+    pub theme: &'a Theme<'ttf, 'a>,
     pub content: &'a str,
-    pub court: Court,
+    pub court: &'a Court,
 }
 
 impl<'ttf, 'a> TextBox<'ttf, 'a> {
-    pub fn new(theme: Theme<'ttf, 'a>, content: &'a str, court: Court) -> TextBox<'ttf, 'a> {
+    pub fn new(theme: &'a Theme<'ttf, 'a>, content: &'a str, court: &'a Court) -> TextBox<'ttf, 'a> {
         TextBox {
-            theme: theme,
+            theme: &theme,
             content: content,
             court: court,
         }
