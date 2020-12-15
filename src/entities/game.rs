@@ -37,7 +37,7 @@ fn find_sdl_gl_driver() -> Option<u32> {
     None
 }
 
-pub struct Game<'a> {
+pub struct Game<'ttf, 'a> {
     running: bool,
     paused: bool,
     score: [i32; 2],
@@ -48,11 +48,11 @@ pub struct Game<'a> {
     audio_player: audio::player::Player<'a>,
     sdl_context: self::sdl2::Sdl,
     video_subsystem: self::sdl2::VideoSubsystem,
-    theme: Theme<'a>,
+    theme: Theme<'ttf, 'a>,
 }
 
-impl<'a> Game<'a> {
-    pub fn new(width: i32, height: i32) -> Game<'a> {
+impl<'ttf, 'a> Game<'ttf, 'a> {
+    pub fn new(ttf_context: &'ttf sdl2::ttf::Sdl2TtfContext, width: i32, height: i32) -> Game<'ttf, 'a> {
         let sdl_context = sdl2::init().unwrap();
         // SDL sub-systems.
         let event_subsystem = sdl_context.event().unwrap();
@@ -93,7 +93,7 @@ impl<'a> Game<'a> {
             event_subsystem.clone(),
         );
 
-        let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string()).unwrap();
+        //let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string()).unwrap();
 
         let color = Color::RGB(255, 157, 0);
         let font_size = 36;
@@ -103,7 +103,7 @@ impl<'a> Game<'a> {
             color,
             font_bytes,
             font_size,
-            &ttf_context,
+            ttf_context,
         );
 
         Game {
