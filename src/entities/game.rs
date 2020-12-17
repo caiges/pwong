@@ -6,18 +6,18 @@ use super::court::Court;
 use super::keymap::KeyPressMap;
 use super::paddle::{Paddle, PaddleDirection};
 use crate::audio;
+use crate::find_sdl_gl_driver;
 
-use self::sdl2::EventPump;
 use self::sdl2::event::{Event, WindowEvent};
 use self::sdl2::keyboard::Keycode;
 use self::sdl2::mixer;
 use self::sdl2::pixels::Color;
 use self::sdl2::rect::Rect;
 use self::sdl2::render::Canvas;
-use self::sdl2::rwops::RWops;
-use self::sdl2::video::{Window};
 use self::sdl2::render::TextureQuery;
-
+use self::sdl2::rwops::RWops;
+use self::sdl2::video::Window;
+use self::sdl2::EventPump;
 
 use std::env;
 use std::thread;
@@ -28,15 +28,6 @@ static PADDLE_HEIGHT: i32 = 100;
 static BALL_RADIUS: i32 = 15;
 static INITIAL_BALL_VX: i32 = -4;
 static INITIAL_BALL_VY: i32 = 0;
-
-fn find_sdl_gl_driver() -> Option<u32> {
-    for (index, item) in sdl2::render::drivers().enumerate() {
-        if item.name == "opengl" {
-            return Some(index as u32);
-        }
-    }
-    None
-}
 
 pub struct Game<'a> {
     running: bool,
@@ -254,19 +245,29 @@ impl<'a> Game<'a> {
         let ttf_rwops = RWops::from_bytes(ttf_bytes).unwrap();
 
         let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string()).unwrap();
-        let sdl_font = ttf_context.load_font_from_rwops(ttf_rwops, font_size).unwrap();
+        let sdl_font = ttf_context
+            .load_font_from_rwops(ttf_rwops, font_size)
+            .unwrap();
 
         for (i, score) in self.score.iter().enumerate() {
-            let surface = sdl_font.render(&score.to_string())
-                .blended(color).map_err(|e| e.to_string()).unwrap();
-            let texture = texture_creator.create_texture_from_surface(&surface)
-                .map_err(|e| e.to_string()).unwrap();
+            let surface = sdl_font
+                .render(&score.to_string())
+                .blended(color)
+                .map_err(|e| e.to_string())
+                .unwrap();
+            let texture = texture_creator
+                .create_texture_from_surface(&surface)
+                .map_err(|e| e.to_string())
+                .unwrap();
 
             let TextureQuery { width, height, .. } = texture.query();
 
-            let x = if i == 0 { margin } else { self.court.width - width as i32 - margin };
+            let x = if i == 0 {
+                margin
+            } else {
+                self.court.width - width as i32 - margin
+            };
             let score_box = Rect::new(x, margin, width, height);
-    
             canvas.copy(&texture, None, Some(score_box)).unwrap();
         }
 
