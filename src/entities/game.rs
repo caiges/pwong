@@ -39,17 +39,17 @@ pub struct Game<'a> {
     ball: Ball,
     keymap: KeyPressMap,
     audio_player: audio::player::Player<'a>,
-    sdl_context: self::sdl2::Sdl,
-    video_subsystem: self::sdl2::VideoSubsystem,
+    sdl_context: &'a self::sdl2::Sdl,
+    video_subsystem: &'a self::sdl2::VideoSubsystem,
 }
 
 impl<'a> Game<'a> {
     pub fn new(
         width: i32,
         height: i32,
-        sdl_context: Sdl,
-        event_subsystem: sdl2::EventSubsystem,
-        video_subsystem: sdl2::VideoSubsystem,
+        sdl_context: &'a Sdl,
+        event_subsystem: &'a sdl2::EventSubsystem,
+        video_subsystem: &'a sdl2::VideoSubsystem,
     ) -> Game<'a> {
         // Open mixer.
         mixer::open_audio(

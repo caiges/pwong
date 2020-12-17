@@ -12,13 +12,13 @@ pub fn main() {
     let video_subsystem = sdl_context.video().unwrap();
     let event_subsystem = sdl_context.event().unwrap();
 
-    let window = Window::new(INITIAL_WIDTH, INITIAL_HEIGHT, video_subsystem.clone());
+    let window = Window::new(INITIAL_WIDTH, INITIAL_HEIGHT, &video_subsystem);
     let mut game = Game::new(
         INITIAL_WIDTH,
         INITIAL_HEIGHT,
-        sdl_context,
-        event_subsystem,
-        video_subsystem.clone(),
+        &sdl_context,
+        &event_subsystem,
+        &video_subsystem,
     );
     game.run(window);
 }
