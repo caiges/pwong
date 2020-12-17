@@ -5,6 +5,7 @@ use super::ball::Ball;
 use super::court::Court;
 use super::keymap::KeyPressMap;
 use super::paddle::{Paddle, PaddleDirection};
+use super::window::Window;
 use crate::audio;
 use crate::find_sdl_gl_driver;
 
@@ -13,11 +14,11 @@ use self::sdl2::keyboard::Keycode;
 use self::sdl2::mixer;
 use self::sdl2::pixels::Color;
 use self::sdl2::rect::Rect;
-use self::sdl2::render::Canvas;
 use self::sdl2::render::TextureQuery;
+use self::sdl2::render::WindowCanvas;
 use self::sdl2::rwops::RWops;
-use self::sdl2::video::Window;
 use self::sdl2::EventPump;
+use self::sdl2::Sdl;
 
 use std::env;
 use std::thread;
@@ -43,12 +44,13 @@ pub struct Game<'a> {
 }
 
 impl<'a> Game<'a> {
-    pub fn new(width: i32, height: i32) -> Game<'a> {
-        let sdl_context = sdl2::init().unwrap();
-        // SDL sub-systems.
-        let event_subsystem = sdl_context.event().unwrap();
-        let video_subsystem = sdl_context.video().unwrap();
-
+    pub fn new(
+        width: i32,
+        height: i32,
+        sdl_context: Sdl,
+        event_subsystem: sdl2::EventSubsystem,
+        video_subsystem: sdl2::VideoSubsystem,
+    ) -> Game<'a> {
         // Open mixer.
         mixer::open_audio(
             44_100,
@@ -98,16 +100,9 @@ impl<'a> Game<'a> {
         }
     }
 
-    pub fn run(&mut self) {
-        let window = self
-            .video_subsystem
-            .window("Window", self.court.width as u32, self.court.height as u32)
-            .opengl()
-            .position_centered()
-            .resizable()
-            .build()
-            .unwrap();
+    pub fn run(&mut self, window: Window) {
         let mut canvas = window
+            .window
             .into_canvas()
             .index(find_sdl_gl_driver().unwrap())
             .build()
@@ -216,12 +211,12 @@ impl<'a> Game<'a> {
         }
     }
 
-    pub fn wipe(&mut self, canvas: &mut Canvas<Window>) {
+    pub fn wipe(&mut self, canvas: &mut WindowCanvas) {
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
     }
 
-    pub fn draw(&mut self, canvas: &mut Canvas<Window>) {
+    pub fn draw(&mut self, canvas: &mut WindowCanvas) {
         let color = Color::RGB(255, 157, 0);
         let font_size = 36;
         let margin = 20i32;
