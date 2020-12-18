@@ -10,13 +10,19 @@ use self::sdl2::video::Window;
 pub struct TextBox<'ttf, 'a> {
     pub theme: &'a Theme<'ttf, 'a>,
     pub content: &'a str,
+    pub width: u32,
+    pub height: u32,
 }
 
 impl<'ttf, 'a> TextBox<'ttf, 'a> {
     pub fn new(theme: &'a Theme<'ttf, 'a>, content: &'a str) -> TextBox<'ttf, 'a> {
+        let fr = theme.font.size_of(content).unwrap();
+
         TextBox {
             theme: &theme,
             content: content,
+            width: fr.0,
+            height: fr.1,
         }
     }
 

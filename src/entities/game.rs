@@ -249,7 +249,7 @@ impl<'ttf, 'a> Game<'ttf, 'a> {
             let x = if i == 0 {
                 margin
             } else {
-                self.court.width - margin
+                self.court.width - margin - score_box.width as i32
             };
             let y = margin;
             score_box.render(canvas, x, y);
