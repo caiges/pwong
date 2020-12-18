@@ -5,6 +5,9 @@ use super::ball::Ball;
 use super::court::Court;
 use super::keymap::KeyPressMap;
 use super::paddle::{Paddle, PaddleDirection};
+use super::theme::Theme;
+use super::textbox::TextBox;
+
 use crate::audio;
 
 use self::sdl2::EventPump;
@@ -12,12 +15,8 @@ use self::sdl2::event::{Event, WindowEvent};
 use self::sdl2::keyboard::Keycode;
 use self::sdl2::mixer;
 use self::sdl2::pixels::Color;
-use self::sdl2::rect::Rect;
 use self::sdl2::render::Canvas;
-use self::sdl2::rwops::RWops;
-use self::sdl2::video::{Window};
-use self::sdl2::render::TextureQuery;
-
+use self::sdl2::video::Window;
 
 use std::env;
 use std::thread;
@@ -38,7 +37,7 @@ fn find_sdl_gl_driver() -> Option<u32> {
     None
 }
 
-pub struct Game<'a> {
+pub struct Game<'ttf, 'a> {
     running: bool,
     paused: bool,
     score: [i32; 2],
@@ -49,10 +48,11 @@ pub struct Game<'a> {
     audio_player: audio::player::Player<'a>,
     sdl_context: self::sdl2::Sdl,
     video_subsystem: self::sdl2::VideoSubsystem,
+    theme: Theme<'ttf, 'a>,
 }
 
-impl<'a> Game<'a> {
-    pub fn new(width: i32, height: i32) -> Game<'a> {
+impl<'ttf, 'a> Game<'ttf, 'a> {
+    pub fn new(ttf_context: &'ttf sdl2::ttf::Sdl2TtfContext, width: i32, height: i32) -> Game<'ttf, 'a> {
         let sdl_context = sdl2::init().unwrap();
         // SDL sub-systems.
         let event_subsystem = sdl_context.event().unwrap();
@@ -93,6 +93,19 @@ impl<'a> Game<'a> {
             event_subsystem.clone(),
         );
 
+        //let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string()).unwrap();
+
+        let color = Color::RGB(255, 157, 0);
+        let font_size = 36;
+        let font_bytes = include_bytes!("../OpenSans-Regular.ttf");
+
+        let theme = Theme::new(
+            color,
+            font_bytes,
+            font_size,
+            ttf_context,
+        );
+
         Game {
             running: true,
             paused: true,
@@ -104,6 +117,7 @@ impl<'a> Game<'a> {
             audio_player: audio_player,
             sdl_context: sdl_context,
             video_subsystem: video_subsystem,
+            theme: theme,
         }
     }
 
@@ -231,11 +245,9 @@ impl<'a> Game<'a> {
     }
 
     pub fn draw(&mut self, canvas: &mut Canvas<Window>) {
-        let color = Color::RGB(255, 157, 0);
-        let font_size = 36;
         let margin = 20i32;
 
-        canvas.set_draw_color(color);
+        canvas.set_draw_color(self.theme.color);
         for player in self.players.iter_mut() {
             match canvas.draw_rect(player.get_rect()) {
                 Err(why) => panic!("{:?}", why),
@@ -248,26 +260,11 @@ impl<'a> Game<'a> {
             Ok(_) => {}
         }
 
-        let texture_creator = canvas.texture_creator();
-
-        let ttf_bytes = include_bytes!("../OpenSans-Regular.ttf");
-        let ttf_rwops = RWops::from_bytes(ttf_bytes).unwrap();
-
-        let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string()).unwrap();
-        let sdl_font = ttf_context.load_font_from_rwops(ttf_rwops, font_size).unwrap();
-
         for (i, score) in self.score.iter().enumerate() {
-            let surface = sdl_font.render(&score.to_string())
-                .blended(color).map_err(|e| e.to_string()).unwrap();
-            let texture = texture_creator.create_texture_from_surface(&surface)
-                .map_err(|e| e.to_string()).unwrap();
-
-            let TextureQuery { width, height, .. } = texture.query();
-
-            let x = if i == 0 { margin } else { self.court.width - width as i32 - margin };
-            let score_box = Rect::new(x, margin, width, height);
-    
-            canvas.copy(&texture, None, Some(score_box)).unwrap();
+            let score_str = &score.to_string();
+            let mut score_box = TextBox::new(&self.theme, score_str, &self.court);
+            let x_offset = if i == 0 { margin } else { 0 - margin };
+            score_box.render(canvas, x_offset, margin);
         }
 
         canvas.present();
