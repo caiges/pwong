@@ -11,6 +11,7 @@ pub fn main() {
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
     let event_subsystem = sdl_context.event().unwrap();
+    let ttf_context = sdl2::ttf::init().unwrap();
 
     let window = Window::new(INITIAL_WIDTH, INITIAL_HEIGHT, &video_subsystem);
     let mut game = Game::new(
@@ -19,6 +20,7 @@ pub fn main() {
         &sdl_context,
         &event_subsystem,
         &video_subsystem,
+        &ttf_context,
     );
     game.run(window);
 }
