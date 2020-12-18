@@ -245,9 +245,14 @@ impl<'ttf, 'a> Game<'ttf, 'a> {
 
         for (i, score) in self.score.iter().enumerate() {
             let score_str = &score.to_string();
-            let mut score_box = TextBox::new(&self.theme, score_str, &self.court);
-            let x_offset = if i == 0 { margin } else { 0 - margin };
-            score_box.render(canvas, x_offset, margin);
+            let mut score_box = TextBox::new(&self.theme, score_str);
+            let x = if i == 0 {
+                margin
+            } else {
+                self.court.width - margin
+            };
+            let y = margin;
+            score_box.render(canvas, x, y);
         }
 
         canvas.present();
