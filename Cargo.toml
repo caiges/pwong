@@ -3,6 +3,7 @@
 name = "pwong"
 version = "0.0.1"
 authors = ["caiges <caige@fastmail.fm>"]
+build = "build.rs"
 
 [lib]
 name = "pwong"
