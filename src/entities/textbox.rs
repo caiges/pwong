@@ -16,13 +16,13 @@ pub struct TextBox<'ttf, 'a> {
 
 impl<'ttf, 'a> TextBox<'ttf, 'a> {
     pub fn new(theme: &'a Theme<'ttf, 'a>, content: &'a str) -> TextBox<'ttf, 'a> {
-        let fr = theme.font.size_of(content).unwrap();
+        let (width, height) = theme.font.size_of(content).unwrap();
 
         TextBox {
             theme: &theme,
             content: content,
-            width: fr.0,
-            height: fr.1,
+            width: width,
+            height: height,
         }
     }
 
