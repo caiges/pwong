@@ -30,7 +30,7 @@ static BALL_RADIUS: i32 = 15;
 static INITIAL_BALL_VX: i32 = -4;
 static INITIAL_BALL_VY: i32 = 0;
 
-pub struct Game<'ttf, 'a> {
+pub struct Game<'a> {
     running: bool,
     paused: bool,
     score: [i32; 2],
@@ -42,18 +42,18 @@ pub struct Game<'ttf, 'a> {
     sdl_context: &'a Sdl,
     event_subsystem: &'a sdl2::EventSubsystem,
     video_subsystem: &'a sdl2::VideoSubsystem,
-    theme: Theme<'ttf, 'a>,
+    theme: &'a Theme<'a, 'a>,
 }
 
-impl<'ttf, 'a> Game<'ttf, 'a> {
+impl<'a> Game<'a> {
     pub fn new(
         width: i32,
         height: i32,
         sdl_context: &'a Sdl,
         event_subsystem: &'a sdl2::EventSubsystem,
         video_subsystem: &'a sdl2::VideoSubsystem,
-        ttf_context: &'ttf sdl2::ttf::Sdl2TtfContext,
-    ) -> Game<'ttf, 'a> {
+        theme: &'a super::theme::Theme,
+    ) -> Game<'a> {
         // Open mixer.
         mixer::open_audio(
             44_100,
@@ -89,12 +89,6 @@ impl<'ttf, 'a> Game<'ttf, 'a> {
             event_subsystem.clone(),
         );
 
-        let color = Color::RGB(255, 157, 0);
-        let font_size = 36;
-        let font_bytes = include_bytes!("../OpenSans-Regular.ttf");
-
-        let theme = Theme::new(color, font_bytes, font_size, ttf_context);
-
         Game {
             running: true,
             paused: true,
@@ -111,7 +105,7 @@ impl<'ttf, 'a> Game<'ttf, 'a> {
         }
     }
 
-    pub fn run(&mut self, window: Window) {
+    pub fn run(&mut self, window: Window, event_pump: &mut sdl2::EventPump) {
         let mut canvas = window
             .window
             .into_canvas()
@@ -125,10 +119,8 @@ impl<'ttf, 'a> Game<'ttf, 'a> {
             Ok(_) => {}
         }
 
-        let mut event_pump = self.sdl_context.event_pump().unwrap();
-
         while self.running {
-            self.capture_events(&mut event_pump);
+            self.capture_events(event_pump);
             self.update();
             self.check_for_score();
             self.wipe(&mut canvas);
@@ -159,7 +151,7 @@ impl<'ttf, 'a> Game<'ttf, 'a> {
         self.court.height = window_height;
     }
 
-    pub fn capture_events(&mut self, event_pump: &mut EventPump) {
+    pub fn capture_events(&mut self, event_pump: &mut sdl2::EventPump) {
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
