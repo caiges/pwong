@@ -4,6 +4,7 @@ pub mod court;
 pub mod game;
 pub mod keymap;
 pub mod main_menu;
+pub mod menu_item;
 pub mod paddle;
 pub mod textbox;
 pub mod theme;
