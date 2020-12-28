@@ -102,8 +102,14 @@ impl<'a> MainMenu<'a> {
         self.selected_item -= 1;
     }
 
+    pub fn activate_item(&mut self) {
+        if self.selected_item == self.items.len() as i32 - 1 {
+            self.quit();
+        }
+    }
+
     pub fn quit(&mut self) {
-        self.running = false;
+        std::process::exit(0);
     }
 }
 
@@ -125,6 +131,10 @@ impl <'a> Scene for MainMenu<'a> {
                     keycode: Some(Keycode::Up),
                     ..
                 } => self.previous_item(),
+                Event::KeyDown {
+                    keycode: Some(Keycode::Return),
+                    ..
+                } => self.activate_item(),
                 _ => {}
             }
     }

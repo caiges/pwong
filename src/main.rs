@@ -82,7 +82,7 @@ p        INITIAL_WIDTH,
     }
 
     // Register our custom events.
-    event::start_game(&event_subsystem);
+    event::register_custom_events(&event_subsystem);
 
     let mut main_menu = MainMenu::new(
         INITIAL_WIDTH,
