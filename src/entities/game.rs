@@ -11,6 +11,7 @@ use super::window::Window;
 
 use crate::audio;
 use crate::find_sdl_gl_driver;
+use crate::Scene;
 
 use self::sdl2::event::{Event, WindowEvent};
 use self::sdl2::keyboard::Keycode;
@@ -105,162 +106,6 @@ impl<'a> Game<'a> {
         }
     }
 
-    pub fn run(&mut self, window: Window, event_pump: &mut sdl2::EventPump) {
-        let mut canvas = window
-            .window
-            .into_canvas()
-            .index(find_sdl_gl_driver().unwrap())
-            .build()
-            .unwrap();
-
-        gl::load_with(|name| self.video_subsystem.gl_get_proc_address(name) as *const _);
-        match canvas.window().gl_set_context_to_current() {
-            Err(why) => panic!("{:?}", why),
-            Ok(_) => {}
-        }
-
-        while self.running {
-            self.capture_events(event_pump);
-            self.update();
-            self.check_for_score();
-            self.wipe(&mut canvas);
-            self.draw(&mut canvas);
-            self.audio();
-
-            thread::sleep(Duration::from_millis(17));
-        }
-    }
-
-    pub fn handle_resize(&mut self, window_width: i32, window_height: i32) {
-        if window_width != self.players[1].x + self.players[1].width {
-            self.players[1].x = window_width - self.players[1].width;
-        }
-        if window_height != self.players[0].max_y {
-            self.players[0].max_y = window_height;
-            self.players[1].max_y = window_height;
-        }
-
-        if window_height < self.players[0].y + self.players[0].height {
-            self.players[0].y = window_height - self.players[0].height;
-        }
-        if window_height < self.players[1].y + self.players[1].height {
-            self.players[1].y = window_height - self.players[1].height;
-        }
-
-        self.court.width = window_width;
-        self.court.height = window_height;
-    }
-
-    pub fn capture_events(&mut self, event_pump: &mut sdl2::EventPump) {
-        for event in event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => self.quit(),
-                Event::KeyDown {
-                    keycode: Some(Keycode::Space),
-                    ..
-                } => self.pause(),
-                Event::KeyDown {
-                    keycode: Some(Keycode::R),
-                    ..
-                } => self.reset(),
-                Event::KeyDown { keycode, .. } => self.keymap.press(keycode.unwrap()),
-                Event::KeyUp { keycode, .. } => self.keymap.release(keycode.unwrap()),
-                Event::Window {
-                    win_event: WindowEvent::Resized(data1, data2),
-                    ..
-                } => self.handle_resize(data1, data2),
-                Event::User { code: 456, .. } => {
-                    self.audio_player.add("ball_collision".to_string())
-                }
-                _ => {}
-            }
-        }
-    }
-
-    pub fn update(&mut self) {
-        if !self.paused {
-            match self.keymap.last_pressed(&[Keycode::A, Keycode::Z]) {
-                Some(key) => {
-                    match key {
-                        Keycode::A => self.players[0].direction = PaddleDirection::UP,
-                        Keycode::Z => self.players[0].direction = PaddleDirection::DOWN,
-                        _ => {}
-                    };
-                }
-                None => self.players[0].direction = PaddleDirection::NONE,
-            };
-
-            match self.keymap.last_pressed(&[Keycode::Quote, Keycode::Slash]) {
-                Some(key) => {
-                    match key {
-                        Keycode::Quote => self.players[1].direction = PaddleDirection::UP,
-                        Keycode::Slash => self.players[1].direction = PaddleDirection::DOWN,
-                        _ => {}
-                    };
-                }
-                None => self.players[1].direction = PaddleDirection::NONE,
-            };
-
-            for player in self.players.iter_mut() {
-                player.update()
-            }
-
-            self.ball
-                .update(&self.players[0], &self.players[1], self.court.height);
-        }
-    }
-
-    pub fn wipe(&mut self, canvas: &mut WindowCanvas) {
-        canvas.set_draw_color(Color::RGB(0, 0, 0));
-        canvas.clear();
-    }
-
-    pub fn draw(&mut self, canvas: &mut WindowCanvas) {
-        let margin = 20i32;
-
-        canvas.set_draw_color(self.theme.color);
-        for player in self.players.iter_mut() {
-            match canvas.draw_rect(player.get_rect()) {
-                Err(why) => panic!("{:?}", why),
-                Ok(_) => {}
-            }
-        }
-        let points = self.ball.get_points();
-        match canvas.draw_points(&points[..]) {
-            Err(why) => panic!("{:?}", why),
-            Ok(_) => {}
-        }
-
-        for (i, score) in self.score.iter().enumerate() {
-            let score_str = &score.to_string();
-            let mut score_box = TextBox::new(&self.theme, score_str);
-            let x = if i == 0 {
-                margin
-            } else {
-                self.court.width - margin - score_box.width as i32
-            };
-            let y = margin;
-            score_box.render(canvas, x, y);
-        }
-
-        canvas.present();
-    }
-
-    pub fn audio(&mut self) {
-        self.audio_player.play().unwrap();
-        if !self.paused {
-            self.audio_player
-                .play_music("orchestra".to_string(), self.paused)
-                .unwrap();
-        } else {
-            self.audio_player.pause_music();
-        }
-    }
-
     // In lieu of a more structured player type and event system, monitor the x coordinate of the ball, score for the appropriate player
     pub fn check_for_score(&mut self) {
         if self.ball.x - self.ball.r <= 0 {
@@ -306,5 +151,135 @@ impl<'a> Game<'a> {
 
     pub fn quit(&mut self) {
         self.running = false;
+    }
+}
+
+impl <'a> Scene for Game<'a> {
+    fn handle_resize(&mut self, window_width: i32, window_height: i32) {
+        if window_width != self.players[1].x + self.players[1].width {
+            self.players[1].x = window_width - self.players[1].width;
+        }
+        if window_height != self.players[0].max_y {
+            self.players[0].max_y = window_height;
+            self.players[1].max_y = window_height;
+        }
+
+        if window_height < self.players[0].y + self.players[0].height {
+            self.players[0].y = window_height - self.players[0].height;
+        }
+        if window_height < self.players[1].y + self.players[1].height {
+            self.players[1].y = window_height - self.players[1].height;
+        }
+
+        self.court.width = window_width;
+        self.court.height = window_height;
+    }
+
+    fn capture_event(&mut self, event: sdl2::event::Event) {
+            match event {
+                Event::Quit { .. }
+                | Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => self.quit(),
+                Event::KeyDown {
+                    keycode: Some(Keycode::Space),
+                    ..
+                } => self.pause(),
+                Event::KeyDown {
+                    keycode: Some(Keycode::R),
+                    ..
+                } => self.reset(),
+                Event::KeyDown { keycode, .. } => self.keymap.press(keycode.unwrap()),
+                Event::KeyUp { keycode, .. } => self.keymap.release(keycode.unwrap()),
+                Event::Window {
+                    win_event: WindowEvent::Resized(data1, data2),
+                    ..
+                } => self.handle_resize(data1, data2),
+                Event::User { code: 456, .. } => {
+                    self.audio_player.add("ball_collision".to_string())
+                }
+                _ => {}
+            }
+    }
+
+    fn update(&mut self) {
+        if !self.paused {
+            match self.keymap.last_pressed(&[Keycode::A, Keycode::Z]) {
+                Some(key) => {
+                    match key {
+                        Keycode::A => self.players[0].direction = PaddleDirection::UP,
+                        Keycode::Z => self.players[0].direction = PaddleDirection::DOWN,
+                        _ => {}
+                    };
+                }
+                None => self.players[0].direction = PaddleDirection::NONE,
+            };
+
+            match self.keymap.last_pressed(&[Keycode::Quote, Keycode::Slash]) {
+                Some(key) => {
+                    match key {
+                        Keycode::Quote => self.players[1].direction = PaddleDirection::UP,
+                        Keycode::Slash => self.players[1].direction = PaddleDirection::DOWN,
+                        _ => {}
+                    };
+                }
+                None => self.players[1].direction = PaddleDirection::NONE,
+            };
+
+            for player in self.players.iter_mut() {
+                player.update()
+            }
+
+            self.ball
+                .update(&self.players[0], &self.players[1], self.court.height);
+        }
+    }
+
+    fn wipe(&mut self, canvas: &mut WindowCanvas) {
+        canvas.set_draw_color(Color::RGB(0, 0, 0));
+        canvas.clear();
+    }
+
+    fn draw(&mut self, canvas: &mut WindowCanvas) {
+        let margin = 20i32;
+
+        canvas.set_draw_color(self.theme.color);
+        for player in self.players.iter_mut() {
+            match canvas.draw_rect(player.get_rect()) {
+                Err(why) => panic!("{:?}", why),
+                Ok(_) => {}
+            }
+        }
+        let points = self.ball.get_points();
+        match canvas.draw_points(&points[..]) {
+            Err(why) => panic!("{:?}", why),
+            Ok(_) => {}
+        }
+
+        for (i, score) in self.score.iter().enumerate() {
+            let score_str = &score.to_string();
+            let mut score_box = TextBox::new(&self.theme, score_str);
+            let x = if i == 0 {
+                margin
+            } else {
+                self.court.width - margin - score_box.width as i32
+            };
+            let y = margin;
+            score_box.render(canvas, x, y);
+        }
+
+        canvas.present();
+    }
+
+    fn audio(&mut self) {
+        self.audio_player.play().unwrap();
+        if !self.paused {
+            self.audio_player
+                .play_music("orchestra".to_string(), self.paused)
+                .unwrap();
+        } else {
+            self.audio_player.pause_music();
+        }
     }
 }

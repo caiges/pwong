@@ -2,8 +2,19 @@ extern crate sdl2;
 
 pub mod audio;
 pub mod entities;
+pub mod event;
 
 use self::sdl2::rect::Point;
+use self::sdl2::render::WindowCanvas;
+
+pub trait Scene {
+  fn capture_event(&mut self, sdl2::event::Event);
+  fn handle_resize(&mut self, i32, i32);
+  fn update(&mut self);
+  fn wipe(&mut self, &mut WindowCanvas);
+  fn draw(&mut self, &mut WindowCanvas);
+  fn audio(&mut self);
+}
 
 pub fn find_sdl_gl_driver() -> Option<u32> {
   for (index, item) in sdl2::render::drivers().enumerate() {

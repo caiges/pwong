@@ -1,22 +1,18 @@
 extern crate gl;
 extern crate sdl2;
 
-use super::ball::Ball;
-use super::court::Court;
 use super::keymap::KeyPressMap;
-use super::paddle::{Paddle, PaddleDirection};
 use super::textbox::TextBox;
 use super::theme::Theme;
 use super::window::Window;
 
 use crate::audio;
-use crate::find_sdl_gl_driver;
+use crate::Scene;
 
 use self::sdl2::event::{Event, WindowEvent};
 use self::sdl2::keyboard::Keycode;
 use self::sdl2::mixer;
 use self::sdl2::pixels::Color;
-use self::sdl2::rect::Point;
 use self::sdl2::render::WindowCanvas;
 use self::sdl2::Sdl;
 
@@ -106,33 +102,15 @@ impl<'a> MainMenu<'a> {
         self.selected_item -= 1;
     }
 
-    pub fn run(&mut self, window: Window, event_pump: &mut sdl2::EventPump) {
-        let mut canvas = window
-            .window
-            .into_canvas()
-            .index(find_sdl_gl_driver().unwrap())
-            .build()
-            .unwrap();
-
-        gl::load_with(|name| self.video_subsystem.gl_get_proc_address(name) as *const _);
-        match canvas.window().gl_set_context_to_current() {
-            Err(why) => panic!("{:?}", why),
-            Ok(_) => {}
-        }
-
-        while self.running {
-            self.capture_events(event_pump);
-            self.update();
-            self.wipe(&mut canvas);
-            self.draw(&mut canvas);
-            self.audio();
-
-            thread::sleep(Duration::from_millis(17));
-        }
+    pub fn quit(&mut self) {
+        self.running = false;
     }
+}
 
-    pub fn capture_events(&mut self, event_pump: &mut sdl2::EventPump) {
-        for event in event_pump.poll_iter() {
+impl <'a> Scene for MainMenu<'a> {
+    fn handle_resize(&mut self, window_width: i32, window_height: i32) {}
+
+    fn capture_event(&mut self, event: sdl2::event::Event) {
             match event {
                 Event::Quit { .. }
                 | Event::KeyDown {
@@ -149,10 +127,9 @@ impl<'a> MainMenu<'a> {
                 } => self.previous_item(),
                 _ => {}
             }
-        }
     }
 
-    pub fn update(&mut self) {
+    fn update(&mut self) {
         /*if !self.paused {
             match self.keymap.last_pressed(&[Keycode::A, Keycode::Z]) {
                 Some(key) => {
@@ -185,12 +162,12 @@ impl<'a> MainMenu<'a> {
         }*/
     }
 
-    pub fn wipe(&mut self, canvas: &mut WindowCanvas) {
+    fn wipe(&mut self, canvas: &mut WindowCanvas) {
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
     }
 
-    pub fn draw(&mut self, canvas: &mut WindowCanvas) {
+    fn draw(&mut self, canvas: &mut WindowCanvas) {
         let margin = 20i32;
 
         self.pwong_label.render(canvas, 200, 100);
@@ -214,7 +191,7 @@ impl<'a> MainMenu<'a> {
         canvas.present();
     }
 
-    pub fn audio(&mut self) {
+     fn audio(&mut self) {
         self.audio_player.play().unwrap();
         if !self.paused {
             self.audio_player
@@ -225,7 +202,4 @@ impl<'a> MainMenu<'a> {
         }
     }
 
-    pub fn quit(&mut self) {
-        self.running = false;
-    }
 }
