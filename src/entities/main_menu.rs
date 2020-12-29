@@ -4,12 +4,12 @@ extern crate sdl2;
 use super::keymap::KeyPressMap;
 use super::textbox::TextBox;
 use super::theme::Theme;
-use super::window::Window;
+use super::menu_item::MenuItem;
 
 use crate::audio;
 use crate::Scene;
 
-use self::sdl2::event::{Event, WindowEvent};
+use self::sdl2::event::{Event};
 use self::sdl2::keyboard::Keycode;
 use self::sdl2::mixer;
 use self::sdl2::pixels::Color;
@@ -17,8 +17,6 @@ use self::sdl2::render::WindowCanvas;
 use self::sdl2::Sdl;
 
 use std::env;
-use std::thread;
-use std::time::Duration;
 
 pub struct MainMenu<'a> {
     running: bool,
@@ -29,8 +27,8 @@ pub struct MainMenu<'a> {
     event_subsystem: &'a sdl2::EventSubsystem,
     video_subsystem: &'a sdl2::VideoSubsystem,
     theme: &'a Theme<'a, 'a>,
-    items: Vec<TextBox<'a, 'a>>,
-    selected_item: i32,
+    items: Vec<MenuItem<'a>>,
+    selected_item: usize,
     pwong_label: TextBox<'a, 'a>,
 }
 
@@ -56,18 +54,16 @@ impl<'a> MainMenu<'a> {
         let pack = env::var("PWONG_ASSET_PACK").unwrap_or("caige".to_string());
         let audio_player = audio::player::Player::new(pack);
 
-        let color = Color::RGB(255, 157, 0);
-        let font_size = 36;
-        let font_bytes = include_bytes!("../OpenSans-Regular.ttf");
+        let pwong_label = TextBox::new(&theme, "PWong!!!");
 
         // Menu entities.
-        let pwong_label = TextBox::new(&theme, "PWong!!!");
-        let resume = TextBox::new(&theme, "Resume");
-        let restart = TextBox::new(&theme, "Restart");
-        let to_main = TextBox::new(&theme, "Exit to Main Menu");
-        let quit_pwong = TextBox::new(&theme, "Quit Pwong");
+        let resume = MenuItem::new(&theme, "Resume", None);
+        let restart = MenuItem::new(&theme, "Restart", None);
+        let to_main = MenuItem::new(&theme, "Exit to Main Menu", None);
 
-        let items: Vec<TextBox<'a, 'a>> = vec![resume, restart, to_main, quit_pwong];
+        let quit_pwong = MenuItem::new(&theme, "Quit Pwong", Some(crate::event::quit_game_event(&event_subsystem)));
+
+        let items: Vec<MenuItem<'a>> = vec![resume, restart, to_main, quit_pwong];
 
         MainMenu {
             running: true,
@@ -85,7 +81,7 @@ impl<'a> MainMenu<'a> {
     }
 
     pub fn next_item(&mut self) {
-        if self.selected_item == self.items.len() as i32 - 1 {
+        if self.selected_item == self.items.len() - 1 {
             self.selected_item = 0;
             return;
         }
@@ -95,7 +91,7 @@ impl<'a> MainMenu<'a> {
 
     pub fn previous_item(&mut self) {
         if self.selected_item == 0 {
-            self.selected_item = self.items.len() as i32 - 1;
+            self.selected_item = self.items.len() - 1;
             return;
         }
 
@@ -103,9 +99,12 @@ impl<'a> MainMenu<'a> {
     }
 
     pub fn activate_item(&mut self) {
-        if self.selected_item == self.items.len() as i32 - 1 {
-            self.quit();
-        }
+        match &self.items[self.selected_item].event {
+            Some(e) => {
+                self.event_subsystem.push_event(e.clone());
+            },
+            None => {}
+        };
     }
 
     pub fn quit(&mut self) {
@@ -135,6 +134,10 @@ impl <'a> Scene for MainMenu<'a> {
                     keycode: Some(Keycode::Return),
                     ..
                 } => self.activate_item(),
+                Event::User {
+                    code: 500,
+                    ..
+                } => self.quit(),
                 _ => {}
             }
     }
@@ -178,19 +181,17 @@ impl <'a> Scene for MainMenu<'a> {
     }
 
     fn draw(&mut self, canvas: &mut WindowCanvas) {
-        let margin = 20i32;
-
         self.pwong_label.render(canvas, 200, 100);
 
         canvas.set_draw_color(self.theme.color);
         let coords = [100, 200];
         for (i, item) in self.items.iter_mut().enumerate() {
             let x = coords[0];
-            let y = coords[1] + item.height as i32 * 2 * i as i32;
-            item.render(canvas, x, y);
+            let y = coords[1] + item.content.height as i32 * 2 * i as i32;
+            item.content.render(canvas, x, y);
 
-            if self.selected_item == i as i32 {
-                let points = crate::item_marker_points(x - 30, y + item.height as i32 / 2);
+            if self.selected_item == i {
+                let points = crate::item_marker_points(x - 30, y + item.content.height as i32 / 2);
                 match canvas.draw_points(&points[..]) {
                     Err(why) => panic!("{:?}", why),
                     Ok(_) => {}
