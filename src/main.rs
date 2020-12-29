@@ -6,11 +6,12 @@ use std::time::Duration;
 use std::thread;
 
 use self::sdl2::pixels::Color;
+use self::sdl2::event::Event;
+
 use pwong::entities::main_menu::MainMenu;
 use pwong::entities::theme::Theme;
 use pwong::entities::window::Window;
 use pwong::entities::game::Game;
-use pwong::event;
 use pwong::Scene;
 use pwong::find_sdl_gl_driver;
 
@@ -81,9 +82,6 @@ p        INITIAL_WIDTH,
         Ok(_) => {}
     }
 
-    // Register our custom events.
-    event::register_custom_events(&event_subsystem);
-
     let mut main_menu = MainMenu::new(
         INITIAL_WIDTH,
         INITIAL_HEIGHT,
@@ -106,12 +104,19 @@ p        INITIAL_WIDTH,
     scenes.insert("main_menu", Box::new(main_menu));
     scenes.insert("game", Box::new(game));
 
-    let activeScene = "main_menu";
+    let mut active_scene = "main_menu";
 
 loop {
-    let scene: &mut std::boxed::Box<dyn pwong::Scene> = scenes.get_mut(activeScene).unwrap();
+    let scene: &mut std::boxed::Box<dyn pwong::Scene> = scenes.get_mut(active_scene).unwrap();
         for event in event_pump.poll_iter() {
-            scene.capture_event(event);
+            // Handle scene changes.
+            match event {
+                Event::User {
+                    code: 400,
+                    ..
+                } => active_scene = "game",
+                _ => scene.capture_event(event)
+            }
         }
 
         scene.update();

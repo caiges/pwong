@@ -57,13 +57,10 @@ impl<'a> MainMenu<'a> {
         let pwong_label = TextBox::new(&theme, "PWong!!!");
 
         // Menu entities.
-        let resume = MenuItem::new(&theme, "Resume", None);
-        let restart = MenuItem::new(&theme, "Restart", None);
-        let to_main = MenuItem::new(&theme, "Exit to Main Menu", None);
+        let new_game = MenuItem::new(&theme, "New Game", Some(crate::event::new_game(&event_subsystem)));
+        let quit_pwong = MenuItem::new(&theme, "Quit Pwong", Some(crate::event::quit_game(&event_subsystem)));
 
-        let quit_pwong = MenuItem::new(&theme, "Quit Pwong", Some(crate::event::quit_game_event(&event_subsystem)));
-
-        let items: Vec<MenuItem<'a>> = vec![resume, restart, to_main, quit_pwong];
+        let items: Vec<MenuItem<'a>> = vec![new_game, quit_pwong];
 
         MainMenu {
             running: true,
