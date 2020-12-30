@@ -225,6 +225,8 @@ impl<'a> Scene for Game<'a> {
             self.ball
                 .update(&self.players[0], &self.players[1], self.court.height);
         }
+
+        self.check_for_score();
     }
 
     fn wipe(&mut self, canvas: &mut WindowCanvas) {
