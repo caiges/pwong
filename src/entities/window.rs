@@ -11,7 +11,7 @@ pub struct Window {
 impl Window {
   pub fn new(width: i32, height: i32, video_subsystem: &sdl2::VideoSubsystem) -> Window {
     let window = video_subsystem
-      .window("Window", width as u32, height as u32)
+      .window("PWong", width as u32, height as u32)
       .opengl()
       .position_centered()
       .resizable()

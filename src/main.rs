@@ -13,9 +13,9 @@ use pwong::entities::main_menu::MainMenu;
 use pwong::entities::pause_menu::PauseMenu;
 use pwong::entities::theme::Theme;
 use pwong::entities::window::Window;
+use pwong::event;
 use pwong::find_sdl_gl_driver;
 use pwong::Scene;
-use pwong::event;
 
 static INITIAL_HEIGHT: i32 = 800;
 static INITIAL_WIDTH: i32 = 1200;

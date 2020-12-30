@@ -9,8 +9,8 @@ use super::textbox::TextBox;
 use super::theme::Theme;
 
 use crate::audio;
-use crate::Scene;
 use crate::event;
+use crate::Scene;
 
 use self::sdl2::event::{Event, WindowEvent};
 use self::sdl2::keyboard::Keycode;
@@ -173,8 +173,9 @@ impl<'a> Scene for Game<'a> {
                 keycode: Some(Keycode::Escape),
                 ..
             } => {
-                self.event_subsystem.push_event(crate::event::pause_game(&self.event_subsystem));
-            },
+                self.event_subsystem
+                    .push_event(crate::event::pause_game(&self.event_subsystem));
+            }
             Event::KeyDown {
                 keycode: Some(Keycode::Space),
                 ..
