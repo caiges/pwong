@@ -7,23 +7,19 @@ use super::keymap::KeyPressMap;
 use super::paddle::{Paddle, PaddleDirection};
 use super::textbox::TextBox;
 use super::theme::Theme;
-use super::window::Window;
 
 use crate::audio;
-use crate::find_sdl_gl_driver;
 use crate::Scene;
+use crate::event;
 
 use self::sdl2::event::{Event, WindowEvent};
 use self::sdl2::keyboard::Keycode;
 use self::sdl2::mixer;
 use self::sdl2::pixels::Color;
 use self::sdl2::render::WindowCanvas;
-use self::sdl2::EventPump;
 use self::sdl2::Sdl;
 
 use std::env;
-use std::thread;
-use std::time::Duration;
 
 static PADDLE_WIDTH: i32 = 40;
 static PADDLE_HEIGHT: i32 = 100;
@@ -145,16 +141,12 @@ impl<'a> Game<'a> {
         self.paused = true;
     }
 
-    pub fn pause(&mut self) {
-        self.paused = !self.paused;
-    }
-
     pub fn quit(&mut self) {
         self.running = false;
     }
 }
 
-impl <'a> Scene for Game<'a> {
+impl<'a> Scene for Game<'a> {
     fn handle_resize(&mut self, window_width: i32, window_height: i32) {
         if window_width != self.players[1].x + self.players[1].width {
             self.players[1].x = window_width - self.players[1].width;
@@ -176,31 +168,30 @@ impl <'a> Scene for Game<'a> {
     }
 
     fn capture_event(&mut self, event: sdl2::event::Event) {
-            match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => self.quit(),
-                Event::KeyDown {
-                    keycode: Some(Keycode::Space),
-                    ..
-                } => self.pause(),
-                Event::KeyDown {
-                    keycode: Some(Keycode::R),
-                    ..
-                } => self.reset(),
-                Event::KeyDown { keycode, .. } => self.keymap.press(keycode.unwrap()),
-                Event::KeyUp { keycode, .. } => self.keymap.release(keycode.unwrap()),
-                Event::Window {
-                    win_event: WindowEvent::Resized(data1, data2),
-                    ..
-                } => self.handle_resize(data1, data2),
-                Event::User { code: 456, .. } => {
-                    self.audio_player.add("ball_collision".to_string())
-                }
-                _ => {}
-            }
+        match event {
+            Event::KeyDown {
+                keycode: Some(Keycode::Escape),
+                ..
+            } => {
+                self.event_subsystem.push_event(crate::event::pause_game(&self.event_subsystem));
+            },
+            Event::KeyDown {
+                keycode: Some(Keycode::Space),
+                ..
+            } => self.pause(),
+            Event::KeyDown {
+                keycode: Some(Keycode::R),
+                ..
+            } => self.reset(),
+            Event::KeyDown { keycode, .. } => self.keymap.press(keycode.unwrap()),
+            Event::KeyUp { keycode, .. } => self.keymap.release(keycode.unwrap()),
+            Event::Window {
+                win_event: WindowEvent::Resized(data1, data2),
+                ..
+            } => self.handle_resize(data1, data2),
+            Event::User { code: 456, .. } => self.audio_player.add("ball_collision".to_string()),
+            _ => {}
+        }
     }
 
     fn update(&mut self) {
@@ -281,5 +272,13 @@ impl <'a> Scene for Game<'a> {
         } else {
             self.audio_player.pause_music();
         }
+    }
+
+    fn pause(&mut self) {
+        self.paused = !self.paused;
+    }
+
+    fn resume(&mut self) {
+        self.paused = !self.paused;
     }
 }

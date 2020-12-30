@@ -19,7 +19,7 @@ use self::sdl2::Sdl;
 
 use std::env;
 
-pub struct MainMenu<'a> {
+pub struct PauseMenu<'a> {
     running: bool,
     paused: bool,
     keymap: KeyPressMap,
@@ -33,7 +33,7 @@ pub struct MainMenu<'a> {
     pwong_label: TextBox<'a, 'a>,
 }
 
-impl<'a> MainMenu<'a> {
+impl<'a> PauseMenu<'a> {
     pub fn new(
         width: i32,
         height: i32,
@@ -41,7 +41,7 @@ impl<'a> MainMenu<'a> {
         event_subsystem: &'a sdl2::EventSubsystem,
         video_subsystem: &'a sdl2::VideoSubsystem,
         theme: &'a Theme<'a, 'a>,
-    ) -> MainMenu<'a> {
+    ) -> PauseMenu<'a> {
         // Open mixer.
         mixer::open_audio(
             44_100,
@@ -58,10 +58,10 @@ impl<'a> MainMenu<'a> {
         let pwong_label = TextBox::new(&theme, "PWong!!!");
 
         // Menu entities.
-        let new_game = MenuItem::new(
+        let resume_game = MenuItem::new(
             &theme,
-            "New Game",
-            Some(crate::event::new_game(&event_subsystem)),
+            "Resume Game",
+            Some(crate::event::resume_game(&event_subsystem)),
         );
         let quit_pwong = MenuItem::new(
             &theme,
@@ -69,9 +69,9 @@ impl<'a> MainMenu<'a> {
             Some(crate::event::quit_game(&event_subsystem)),
         );
 
-        let items: Vec<MenuItem<'a>> = vec![new_game, quit_pwong];
+        let items: Vec<MenuItem<'a>> = vec![resume_game, quit_pwong];
 
-        MainMenu {
+        PauseMenu {
             running: true,
             paused: true,
             keymap: KeyPressMap::new(),
@@ -114,7 +114,7 @@ impl<'a> MainMenu<'a> {
     }
 }
 
-impl<'a> Scene for MainMenu<'a> {
+impl<'a> Scene for PauseMenu<'a> {
     fn handle_resize(&mut self, window_width: i32, window_height: i32) {}
 
     fn capture_event(&mut self, event: sdl2::event::Event) {
@@ -139,38 +139,7 @@ impl<'a> Scene for MainMenu<'a> {
         }
     }
 
-    fn update(&mut self) {
-        /*if !self.paused {
-            match self.keymap.last_pressed(&[Keycode::A, Keycode::Z]) {
-                Some(key) => {
-                    match key {
-                        Keycode::A => self.players[0].direction = PaddleDirection::UP,
-                        Keycode::Z => self.players[0].direction = PaddleDirection::DOWN,
-                        _ => {}
-                    };
-                }
-                None => self.players[0].direction = PaddleDirection::NONE,
-            };
-
-            match self.keymap.last_pressed(&[Keycode::Quote, Keycode::Slash]) {
-                Some(key) => {
-                    match key {
-                        Keycode::Quote => self.players[1].direction = PaddleDirection::UP,
-                        Keycode::Slash => self.players[1].direction = PaddleDirection::DOWN,
-                        _ => {}
-                    };
-                }
-                None => self.players[1].direction = PaddleDirection::NONE,
-            };
-
-            for player in self.players.iter_mut() {
-                player.update()
-            }
-
-            self.ball
-                .update(&self.players[0], &self.players[1], self.court.height);
-        }*/
-    }
+    fn update(&mut self) {}
 
     fn wipe(&mut self, canvas: &mut WindowCanvas) {
         canvas.set_draw_color(Color::RGB(0, 0, 0));

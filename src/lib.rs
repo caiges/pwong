@@ -14,6 +14,8 @@ pub trait Scene {
   fn wipe(&mut self, &mut WindowCanvas);
   fn draw(&mut self, &mut WindowCanvas);
   fn audio(&mut self);
+  fn pause(&mut self);
+  fn resume(&mut self);
 }
 
 pub fn find_sdl_gl_driver() -> Option<u32> {

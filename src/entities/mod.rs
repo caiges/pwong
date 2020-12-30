@@ -6,6 +6,7 @@ pub mod keymap;
 pub mod main_menu;
 pub mod menu_item;
 pub mod paddle;
+pub mod pause_menu;
 pub mod textbox;
 pub mod theme;
 pub mod window;
