@@ -190,6 +190,10 @@ impl<'a> Scene for Game<'a> {
                 win_event: WindowEvent::Resized(data1, data2),
                 ..
             } => self.handle_resize(data1, data2),
+            // Reset game.
+            Event::User { code: 454, .. } => {
+                self.reset();
+            }
             Event::User { code: 456, .. } => self.audio_player.add("ball_collision".to_string()),
             _ => {}
         }

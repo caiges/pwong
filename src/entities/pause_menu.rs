@@ -63,13 +63,18 @@ impl<'a> PauseMenu<'a> {
             "Resume Game",
             Some(crate::event::resume_game(&event_subsystem)),
         );
+        let main_menu = MenuItem::new(
+            &theme,
+            "Quit to Main Menu",
+            Some(crate::event::main_menu(&event_subsystem)),
+        );
         let quit_pwong = MenuItem::new(
             &theme,
             "Quit Pwong",
             Some(crate::event::quit_game(&event_subsystem)),
         );
 
-        let items: Vec<MenuItem<'a>> = vec![resume_game, quit_pwong];
+        let items: Vec<MenuItem<'a>> = vec![resume_game, main_menu, quit_pwong];
 
         PauseMenu {
             running: true,

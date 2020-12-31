@@ -103,7 +103,16 @@ pub fn main() {
                 Event::User { code: 452, .. } => {
                     scene.resume();
                 }
-                Event::User { code: 400, .. } => active_scene = "game",
+                // Exit to main menu.
+                Event::User { code: 453, .. } => {
+                    active_scene = "main_menu";
+                }
+                // New game.
+                Event::User { code: 400, .. } => {
+                    active_scene = "game";
+                    event_subsystem.push_event(crate::event::reset_game(&event_subsystem));
+                    break;
+                }
                 _ => scene.capture_event(event),
             }
         }
