@@ -122,7 +122,10 @@ impl<'a> Scene for PauseMenu<'a> {
             Event::KeyDown {
                 keycode: Some(Keycode::Escape),
                 ..
-            } => self.pause(),
+            } => {
+                self.event_subsystem
+                    .push_event(crate::event::resume_game(&self.event_subsystem));
+            }
             Event::KeyDown {
                 keycode: Some(Keycode::Down),
                 ..
